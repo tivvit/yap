@@ -1,2 +1,5 @@
 test:
   exec: pwd
+long-eval:
+  exec: python3 -c "import time; time.sleep(1)"
+  check: echo "1"

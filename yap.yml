@@ -1,4 +1,7 @@
+# todo support version
+# todo configure backend
 main:
-  name: yap.py
+  include: example.py
   type: script
-test: test.yml
+test:
+  include: test.yml

@@ -4,12 +4,14 @@ import yaml
 
 
 class Block(object):
-    def __init__(self, name: str, exec: str, deps=None, out=None):
+    def __init__(self, name: str, exec: str, check=None, desc=None, deps=None, out=None):
         if deps is None:
             deps = []
         if out is None:
             out = []
         self.name = name
+        self.desc = desc
+        self.check = check
         self.exec = exec
         self.deps = deps
         self.out = out
