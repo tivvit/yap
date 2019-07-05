@@ -1,0 +1,4 @@
+main:
+  name: yap.py
+  type: script
+test: test.yml
