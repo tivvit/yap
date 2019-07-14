@@ -15,10 +15,16 @@ func main() {
 		log.Fatalln(err)
 	}
 	log.Println(string(b))
-	p.Plan()
+	// todo user input
+	pl := p.Plan("finalize")
+	//pl := p.Plan("")
+	b, err = yaml.Marshal(pl)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	log.Println(string(b))
 	log.Println(js)
 	//p.Run(js)
-	// todo resolve deps
 	// todo generate report
 	// todo generate state
 	// todo generate

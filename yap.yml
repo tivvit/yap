@@ -9,3 +9,9 @@ pipeline:
     type: script
   test:
     include: test.yml
+    deps:
+      - main
+  finalize:
+    exec: echo "hello"
+    deps:
+      - test

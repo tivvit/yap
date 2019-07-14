@@ -7,9 +7,8 @@ import (
 
 func ParsePipeline(raw *structs.PipelineRaw) *structs.Pipeline {
 	// todo check duplicate keys (is it even possible here? - yaml solves that?)
-	p := structs.NewPipeline(raw.Version, raw.Settings)
+	p := structs.NewPipeline(raw.Version, raw.Settings, raw.Deps)
 	// todo check version and determine loader
-	log.Println(raw.Version)
 	for k, v := range (*raw).Pipeline {
 		//log.Println(k, v)
 		vm, ok := v.(map[string]interface{})
@@ -26,7 +25,6 @@ func ParsePipeline(raw *structs.PipelineRaw) *structs.Pipeline {
 			}
 			vm = tmp
 		}
-		block := structs.Block{}
 		if _, ik := vm[IncludeKeyword]; ik {
 			//log.Println("\tdetected import")
 			name := vm[IncludeKeyword].(string)
@@ -39,19 +37,28 @@ func ParsePipeline(raw *structs.PipelineRaw) *structs.Pipeline {
 			case "script":
 				ip := LoadScript(name)
 				//log.Println(ip)
+				if deps, ok := vm[DepsKeyword]; ok {
+					for _, i := range deps.([]interface{}) {
+						ip.Deps = append(ip.Deps, i.(string))
+					}
+				}
 				p.Pipeline[k] = ParsePipeline(ip)
 			case "yaml":
 				ip := LoadFile(name)
 				//log.Println(ip)
 				pp := ParsePipeline(ip)
 				//log.Println(pp)
+				if deps, ok := vm[DepsKeyword]; ok {
+					for _, i := range deps.([]interface{}) {
+						pp.Deps = append(pp.Deps, i.(string))
+					}
+				}
 				p.Pipeline[k] = pp
 			default:
 				log.Println("Unknown import type", t)
 			}
 		} else {
-			block = *structs.NewBlockFromMap(k, vm)
-			p.Pipeline[k] = block
+			p.Pipeline[k] = structs.NewBlockFromMap(k, vm)
 		}
 	}
 	return p
