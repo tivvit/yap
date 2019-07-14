@@ -6,11 +6,13 @@ import (
 )
 
 func ParsePipeline(raw *structs.PipelineRaw) *structs.Pipeline {
-	// todo check duplicate keys
-	p := structs.Pipeline{}
-	for k, v := range *raw {
+	// todo check duplicate keys (is it even possible here? - yaml solves that?)
+	p := structs.NewPipeline(raw.Version, raw.Settings)
+	// todo check version and determine loader
+	log.Println(raw.Version)
+	for k, v := range (*raw).Pipeline {
 		//log.Println(k, v)
-		vm, ok := v.(structs.PipelineRaw)
+		vm, ok := v.(map[string]interface{})
 		// todo unify structure
 		if !ok {
 			//log.Println("PipelineRaw conversion err")
@@ -37,20 +39,20 @@ func ParsePipeline(raw *structs.PipelineRaw) *structs.Pipeline {
 			case "script":
 				ip := LoadScript(name)
 				//log.Println(ip)
-				p[k] = ParsePipeline(ip)
+				p.Pipeline[k] = ParsePipeline(ip)
 			case "yaml":
 				ip := LoadFile(name)
 				//log.Println(ip)
 				pp := ParsePipeline(ip)
 				//log.Println(pp)
-				p[k] = pp
+				p.Pipeline[k] = pp
 			default:
 				log.Println("Unknown import type", t)
 			}
 		} else {
 			block = *structs.NewBlockFromMap(k, vm)
-			p[k] = block
+			p.Pipeline[k] = block
 		}
 	}
-	return &p
+	return p
 }

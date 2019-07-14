@@ -1,7 +1,11 @@
-# todo support version
-# todo configure backend
-main:
-  include: example.py
-  type: script
-test:
-  include: test.yml
+version: 1.0
+settings:
+  state:
+    type: json
+    file: state.json
+pipeline:
+  main:
+    include: example.py
+    type: script
+  test:
+    include: test.yml

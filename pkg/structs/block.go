@@ -12,7 +12,7 @@ import (
 type Block struct {
 	Name        string   `yaml:"-"`
 	Description string   `yaml:"desc,omitempty"`
-	Check       []string   `yaml:"check,omitempty"`
+	Check       []string `yaml:"check,omitempty"`
 	Exec        []string `yaml:"exec,omitempty"`
 	Deps        []string `yaml:"deps,omitempty"`
 	Out         []string `yaml:"out,omitempty"`
@@ -105,7 +105,7 @@ func (b Block) changed(state State) bool {
 		return true
 	}
 	currentState := state.Get(b.Name)
-	if  currentState != "" && newState == currentState {
+	if currentState != "" && newState == currentState {
 		log.Printf("phase %s will not run - state did not change", b.Name)
 		return false
 	}

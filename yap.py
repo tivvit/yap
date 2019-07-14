@@ -2,9 +2,10 @@ import copy
 
 import yaml
 
+VERSION = 1.0
 
 class Block(object):
-    def __init__(self, name: str, exec: str, check=None, desc=None, deps=None, out=None):
+    def __init__(self, name: str, exe: str, check=None, desc=None, deps=None, out=None):
         if deps is None:
             deps = []
         if out is None:
@@ -12,7 +13,7 @@ class Block(object):
         self.name = name
         self.desc = desc
         self.check = check
-        self.exec = exec
+        self.exec = exe
         self.deps = deps
         self.out = out
 
@@ -39,11 +40,19 @@ class DictBlock(Block):
 
 
 class Pipeline(object):
-    def __init__(self):
+    def __init__(self, settings=None):
+        if settings is None:
+            settings = {}
         self.pipeline = {}
+        self.settings = settings
 
     def __repr__(self) -> str:
-        return yaml.safe_dump(self.pipeline, default_flow_style=False)
+        out = {
+            "version": VERSION,
+            "pipeline": self.pipeline,
+            "settings": self.settings
+        }
+        return yaml.safe_dump(out, default_flow_style=False)
 
     def load_from_file(self, fn: str):
         for k, v in yaml.load(open(fn, "r")):
