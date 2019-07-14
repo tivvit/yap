@@ -15,7 +15,9 @@ func main() {
 		log.Fatalln(err)
 	}
 	log.Println(string(b))
-	p.Run(js)
+	p.Plan()
+	log.Println(js)
+	//p.Run(js)
 	// todo resolve deps
 	// todo generate report
 	// todo generate state
