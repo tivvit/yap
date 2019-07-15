@@ -14,6 +14,11 @@ type PipelineBlock interface {
 	Run(state State)
 }
 
+// todo common parent for block and pipeline
+// todo files may be output and input
+// todo dependencies for files
+// todo file state checking
+
 type Pipeline struct {
 	Version  float32                  `yaml:"version"`
 	Settings map[string]interface{}   `yaml:"settings,omitempty"`
