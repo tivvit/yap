@@ -19,6 +19,10 @@ type Pipeline struct {
 	Settings map[string]interface{}   `yaml:"settings,omitempty"`
 	Pipeline map[string]PipelineBlock `yaml:"pipeline"`
 	Deps     []string                 `yaml:"deps"`
+	FullName string                   `yaml:"-"`
+	Map      map[string]PipelineBlock `yaml:"-"`
+	Parent   *Pipeline                `yaml:"-"`
+	DepsFull []string                 `yaml:"-"`
 }
 
 func NewPipeline(version float32, settings map[string]interface{}, deps []string) *Pipeline {
@@ -44,6 +48,100 @@ func (p Pipeline) Run(state State) {
 	}
 }
 
+func (p *Pipeline) genDepFull(m map[string]PipelineBlock) {
+	// todo check already generated
+	// todo deps for files
+	for _, d := range p.Deps {
+		if strings.HasPrefix(d, "/") {
+			p.DepsFull = append(p.DepsFull, d)
+		} else {
+			if db, ok := p.Parent.Pipeline[d]; ok {
+				switch db.(type) {
+				case *Block:
+					p.DepsFull = append(p.DepsFull, db.(*Block).FullName)
+				case *Pipeline:
+					p.DepsFull = append(p.DepsFull, db.(*Pipeline).FullName)
+				}
+			}
+		}
+	}
+}
+
+func (p *Pipeline) genDepFullRec(pb PipelineBlock, m map[string]PipelineBlock) {
+	switch pb.(type) {
+	case *Block:
+		pb.(*Block).genDepFull(m)
+	case *Pipeline:
+		for _, v := range pb.(*Pipeline).Pipeline {
+			p.genDepFullRec(v, m)
+		}
+		pb.(*Pipeline).genDepFull(m)
+	}
+}
+
+func getFullName(name string, namespace string) string {
+	return fmt.Sprintf("%s/%s", namespace, name)
+}
+
+func (p Pipeline) names(namespace string, pb PipelineBlock) {
+	switch pb.(type) {
+	case *Pipeline:
+		for k, v := range pb.(*Pipeline).Pipeline {
+			switch v.(type) {
+			case *Pipeline:
+				v.(*Pipeline).FullName = getFullName(k, namespace)
+				p.names(getFullName(k, namespace), v.(*Pipeline))
+			case *Block:
+				v.(*Block).FullName = getFullName(k, namespace)
+			}
+		}
+	}
+}
+
+func (p Pipeline) parents(pb PipelineBlock) {
+	switch pb.(type) {
+	case *Pipeline:
+		for _, v := range pb.(*Pipeline).Pipeline {
+			switch v.(type) {
+			case *Pipeline:
+				p.parents(v.(*Pipeline))
+				v.(*Pipeline).Parent = pb.(*Pipeline)
+			case *Block:
+				v.(*Block).Parent = pb.(*Pipeline)
+			}
+		}
+	}
+}
+
+func (p Pipeline) flatten(pb PipelineBlock) map[string]PipelineBlock {
+	r := map[string]PipelineBlock{}
+	switch pb.(type) {
+	case *Pipeline:
+		for _, v := range pb.(*Pipeline).Pipeline {
+			switch v.(type) {
+			case *Pipeline:
+				for n, b := range p.flatten(v.(*Pipeline)) {
+					r[n] = b
+				}
+				r[v.(*Pipeline).FullName] = v.(*Pipeline)
+			case *Block:
+				r[v.(*Block).FullName] = v.(*Block)
+			}
+		}
+	}
+	return r
+}
+
+func (p *Pipeline) Enrich() {
+	p.names("", p)
+	p.parents(p)
+	p.Map = p.flatten(p)
+	p.genDepFullRec(p, p.Map)
+}
+
+// todo outputs with blocks references
+// todo search dep method
+
 func stages(p PipelineBlock, prefix string) map[string]PipelineBlock {
 	r := make(map[string]PipelineBlock)
 	switch p.(type) {
@@ -51,7 +149,7 @@ func stages(p PipelineBlock, prefix string) map[string]PipelineBlock {
 		for k, v := range p.(*Pipeline).Pipeline {
 			var name string
 			if prefix != "" {
-				name = fmt.Sprintf("%s_%s", prefix, k)
+				name = fmt.Sprintf("%s/%s", prefix, k)
 			} else {
 				name = k
 			}
@@ -141,7 +239,7 @@ func (p Pipeline) Plan(name string) []PipelineBlock {
 	return r
 }
 
-func (p Pipeline) visualize(di *dot.Graph, pipeline PipelineBlock) (map[string]dot.Node, [][2]string) {
+func (p Pipeline) visualize(di *dot.Graph, main *dot.Graph, pipeline PipelineBlock) (map[string]dot.Node, [][2]string) {
 	nodesMap := map[string]dot.Node{}
 	var deps [][2]string
 	switch pipeline.(type) {
@@ -149,35 +247,33 @@ func (p Pipeline) visualize(di *dot.Graph, pipeline PipelineBlock) (map[string]d
 		for k, v := range pipeline.(*Pipeline).Pipeline {
 			switch v.(type) {
 			case *Block:
-				//label := fmt.Sprintf("<table border=\"1\">%s<br/>%s</table>", k, strings.Join(v.(*Block).Exec, " "))
-				label := fmt.Sprintf("<table BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\"><tr><td><b>%s</b></td></tr><tr><td><font face=\"Consolas\">%s</font></td></tr></table>", k, strings.Join(v.(*Block).Exec, " "))
+				label := fmt.Sprintf("<table BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\"><tr><td><b>%s</b></td></tr><tr><td><font face=\"Courier New, Courier, monospace\">%s</font></td></tr></table>", k, strings.Join(v.(*Block).Exec, " "))
 				n := di.Node(k).Attr("shape", "plain")
 				n.Attr("label", dot.HTML(label))
-				nodesMap[k] = n
-				for _, d := range v.(*Block).Deps {
-					deps = append(deps, [2]string{d, k})
-				}
+				nodesMap[v.(*Block).FullName] = n
+				//for _, d := range v.(*Block).Deps {
+				//	deps = append(deps, [2]string{d, k})
+				//}
 				for _, o := range v.(*Block).Out {
-					ob := di.Node(o)
+					ob := main.Node(o)
 					nodesMap[o] = ob
-					log.Println(o, k)
-					deps = append(deps, [2]string{o, k})
-					log.Println(deps)
+					deps = append(deps, [2]string{o, v.(*Block).FullName})
+					// todo add file writers
 				}
 			case *Pipeline:
 				sg := di.Subgraph(k, dot.ClusterOption{})
 				node := sg.Node(strings.ToUpper(k)).Attr("shape", "parallelogram")
-				nodesMap[k] = node
-				nodes, d := p.visualize(sg, v)
-				for _, d := range v.(*Pipeline).Deps {
-					deps = append(deps, [2]string{d, k})
-				}
+				nodesMap[v.(*Pipeline).FullName] = node
+				nodes, d := p.visualize(sg, main, v)
+				//for _, d := range v.(*Pipeline).Deps {
+				//	deps = append(deps, [2]string{d, k})
+				//}
 				for name, node := range nodes {
 					nodesMap[name] = node
 					// detect outputs
 					att := node.AttributesMap
 					if att.Value("shape") != nil {
-						deps = append(deps, [2]string{name, k})
+						deps = append(deps, [2]string{name, v.(*Pipeline).FullName})
 					}
 				}
 				for _, i := range d {
@@ -191,9 +287,24 @@ func (p Pipeline) visualize(di *dot.Graph, pipeline PipelineBlock) (map[string]d
 
 func (p Pipeline) Visualize() {
 	di := dot.NewGraph(dot.Directed)
-	nodeMap, deps := p.visualize(di, &p)
+	// todo file separation should be optional
+	nodeMap, deps := p.visualize(di, di, &p)
+	for _, n := range p.Map {
+		switch n.(type) {
+		case *Block:
+			b := n.(*Block)
+			for _, t := range b.DepsFull {
+				di.Edge(nodeMap[t], nodeMap[b.FullName])
+			}
+		case *Pipeline:
+			b := n.(*Pipeline)
+			for _, t := range b.DepsFull {
+				di.Edge(nodeMap[t], nodeMap[b.FullName])
+			}
+		}
+
+	}
 	for _, d := range deps {
-		log.Println(d)
 		di.Edge(nodeMap[d[0]], nodeMap[d[1]])
 	}
 	f, _ := os.Create("graph.dot")
@@ -207,6 +318,6 @@ func (p Pipeline) tryDot() {
 	if err != nil {
 		log.Fatal(err)
 	} else {
-		log.Println("graphviz ok")
+		log.Println("Graphviz ok")
 	}
 }

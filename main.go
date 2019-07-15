@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/tivvit/yap/pkg"
 	"github.com/tivvit/yap/pkg/stateStorage"
+	"github.com/tivvit/yap/pkg/structs"
 	"gopkg.in/yaml.v3"
 	"log"
 )
@@ -16,6 +17,10 @@ func main() {
 	}
 	log.Println(string(b))
 	// todo user input
+	log.Println("map", p.Map)
+	log.Println("parent", p.Parent)
+	log.Println(p.Pipeline["test"].(*structs.Pipeline).DepsFull)
+	log.Println(p.Pipeline["finalize"].(*structs.Block).DepsFull)
 	pl := p.Plan("finalize")
 	//pl := p.Plan("")
 	b, err = yaml.Marshal(pl)

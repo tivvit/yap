@@ -10,17 +10,39 @@ import (
 )
 
 type Block struct {
-	Name        string   `yaml:"-"`
-	Description string   `yaml:"desc,omitempty"`
-	Check       []string `yaml:"check,omitempty"`
-	Exec        []string `yaml:"exec,omitempty"`
-	Deps        []string `yaml:"deps,omitempty"`
-	Out         []string `yaml:"out,omitempty"`
+	Name        string    `yaml:"-"`
+	Description string    `yaml:"desc,omitempty"`
+	Check       []string  `yaml:"check,omitempty"`
+	Exec        []string  `yaml:"exec,omitempty"`
+	Deps        []string  `yaml:"deps,omitempty"`
+	Out         []string  `yaml:"out,omitempty"`
+	FullName    string    `yaml:"-"`
+	Parent      *Pipeline `yaml:"-"`
+	DepsFull    []string  `yaml:"-"`
 }
 
 type IncludeBlock struct {
 	Include string
 	Type    string
+}
+
+func (b *Block) genDepFull(m map[string]PipelineBlock) {
+	// todo check already generated
+	// todo deps for files
+	for _, d := range b.Deps {
+		if strings.HasPrefix(d, "/") {
+			b.DepsFull = append(b.DepsFull, d)
+		} else {
+			if db, ok := b.Parent.Pipeline[d]; ok {
+				switch db.(type) {
+				case *Block:
+					b.DepsFull = append(b.DepsFull, db.(*Block).FullName)
+				case *Pipeline:
+					b.DepsFull = append(b.DepsFull, db.(*Pipeline).FullName)
+				}
+			}
+		}
+	}
 }
 
 func NewBlockFromMap(name string, m map[string]interface{}) *Block {

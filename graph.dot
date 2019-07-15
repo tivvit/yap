@@ -1,31 +1,44 @@
 digraph  {
-	subgraph cluster_s1 {
-		ID = "cluster_s1";
-		label="main";
-		n7[label=<<table BORDER="0" CELLBORDER="1" CELLSPACING="0"><tr><td><b>B</b></td></tr><tr><td><font face="Consolas">ls -la</font></td></tr></table>>,shape="plain"];
-		n6[label="MAIN",shape="parallelogram"];
-		n8[label=<<table BORDER="0" CELLBORDER="1" CELLSPACING="0"><tr><td><b>a</b></td></tr><tr><td><font face="Consolas">ls</font></td></tr></table>>,shape="plain"];
-		n9[label="files.txt"];
-		n10[label="files1.txt"];
-		
-	}subgraph cluster_s0 {
+	subgraph cluster_s0 {
 		ID = "cluster_s0";
+		label="main";
+		n4[label=<<table BORDER="0" CELLBORDER="1" CELLSPACING="0"><tr><td><b>B</b></td></tr><tr><td><font face="Courier New, Courier, monospace">ls -la</font></td></tr></table>>,shape="plain"];
+		n3[label="MAIN",shape="parallelogram"];
+		n5[label=<<table BORDER="0" CELLBORDER="1" CELLSPACING="0"><tr><td><b>a</b></td></tr><tr><td><font face="Courier New, Courier, monospace">ls</font></td></tr></table>>,shape="plain"];
+		
+	}subgraph cluster_s1 {
+		ID = "cluster_s1";
 		label="test";
-		n3[label="1.txt"];
-		n1[label="TEST",shape="parallelogram"];
-		n2[label=<<table BORDER="0" CELLBORDER="1" CELLSPACING="0"><tr><td><b>long-eval</b></td></tr><tr><td><font face="Consolas">python3 -c import time; time.sleep(1)</font></td></tr></table>>,shape="plain"];
-		n4[label=<<table BORDER="0" CELLBORDER="1" CELLSPACING="0"><tr><td><b>tst</b></td></tr><tr><td><font face="Consolas">pwd</font></td></tr></table>>,shape="plain"];
+		n8[label="TEST",shape="parallelogram"];
+		n10[label=<<table BORDER="0" CELLBORDER="1" CELLSPACING="0"><tr><td><b>long-eval</b></td></tr><tr><td><font face="Courier New, Courier, monospace">python3 -c import time; time.sleep(1)</font></td></tr></table>>,shape="plain"];
+		n9[label=<<table BORDER="0" CELLBORDER="1" CELLSPACING="0"><tr><td><b>test</b></td></tr><tr><td><font face="Courier New, Courier, monospace">pwd</font></td></tr></table>>,shape="plain"];
+		
+	}subgraph cluster_s2 {
+		ID = "cluster_s2";
+		label="test-again";
+		n12[label="TEST-AGAIN",shape="parallelogram"];
+		n14[label=<<table BORDER="0" CELLBORDER="1" CELLSPACING="0"><tr><td><b>long-eval</b></td></tr><tr><td><font face="Courier New, Courier, monospace">python3 -c import time; time.sleep(1)</font></td></tr></table>>,shape="plain"];
+		n13[label=<<table BORDER="0" CELLBORDER="1" CELLSPACING="0"><tr><td><b>test</b></td></tr><tr><td><font face="Courier New, Courier, monospace">pwd</font></td></tr></table>>,shape="plain"];
 		
 	}
-	n5[label=<<table BORDER="0" CELLBORDER="1" CELLSPACING="0"><tr><td><b>finalize</b></td></tr><tr><td><font face="Consolas">echo hello</font></td></tr></table>>,shape="plain"];
-	n3->n2;
-	n7->n6;
-	n6->n1;
-	n1->n5;
-	n8->n6;
-	n9->n8;
+	n11[label="1.txt"];
+	n2[label=<<table BORDER="0" CELLBORDER="1" CELLSPACING="0"><tr><td><b>absolute-dep</b></td></tr><tr><td><font face="Courier New, Courier, monospace">echo world</font></td></tr></table>>,shape="plain"];
+	n6[label="files.txt"];
+	n7[label="files1.txt"];
+	n1[label=<<table BORDER="0" CELLBORDER="1" CELLSPACING="0"><tr><td><b>finalize</b></td></tr><tr><td><font face="Courier New, Courier, monospace">echo hello</font></td></tr></table>>,shape="plain"];
+	n11->n10;
+	n11->n14;
+	n4->n3;
+	n3->n8;
+	n3->n12;
+	n8->n1;
+	n5->n2;
+	n5->n3;
+	n6->n5;
+	n7->n5;
 	n10->n8;
-	n2->n1;
-	n4->n1;
+	n14->n12;
+	n9->n8;
+	n13->n12;
 	
 }

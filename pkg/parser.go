@@ -61,5 +61,6 @@ func ParsePipeline(raw *structs.PipelineRaw) *structs.Pipeline {
 			p.Pipeline[k] = structs.NewBlockFromMap(k, vm)
 		}
 	}
+	p.Enrich()
 	return p
 }
