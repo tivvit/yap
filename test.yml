@@ -1,7 +1,9 @@
 version: 1.0
 pipeline:
-  test:
+  tst:
     exec: pwd
   long-eval:
     exec: python3 -c "import time; time.sleep(1)"
     check: echo "1"
+    out:
+      - 1.txt

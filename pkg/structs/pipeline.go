@@ -2,8 +2,12 @@ package structs
 
 import (
 	"fmt"
+	"github.com/emicklei/dot"
 	"github.com/yourbasic/graph"
 	"log"
+	"os"
+	"os/exec"
+	"strings"
 )
 
 type PipelineBlock interface {
@@ -130,9 +134,79 @@ func (p Pipeline) Plan(name string) []PipelineBlock {
 			r[left], r[right] = r[right], r[left]
 		}
 	} else {
-		for _, i  := range ts {
+		for _, i := range ts {
 			r = append(r, stageMap[nodeMap[i]])
 		}
 	}
 	return r
+}
+
+func (p Pipeline) visualize(di *dot.Graph, pipeline PipelineBlock) (map[string]dot.Node, [][2]string) {
+	nodesMap := map[string]dot.Node{}
+	var deps [][2]string
+	switch pipeline.(type) {
+	case *Pipeline:
+		for k, v := range pipeline.(*Pipeline).Pipeline {
+			switch v.(type) {
+			case *Block:
+				//label := fmt.Sprintf("<table border=\"1\">%s<br/>%s</table>", k, strings.Join(v.(*Block).Exec, " "))
+				label := fmt.Sprintf("<table BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\"><tr><td><b>%s</b></td></tr><tr><td><font face=\"Consolas\">%s</font></td></tr></table>", k, strings.Join(v.(*Block).Exec, " "))
+				n := di.Node(k).Attr("shape", "plain")
+				n.Attr("label", dot.HTML(label))
+				nodesMap[k] = n
+				for _, d := range v.(*Block).Deps {
+					deps = append(deps, [2]string{d, k})
+				}
+				for _, o := range v.(*Block).Out {
+					ob := di.Node(o)
+					nodesMap[o] = ob
+					log.Println(o, k)
+					deps = append(deps, [2]string{o, k})
+					log.Println(deps)
+				}
+			case *Pipeline:
+				sg := di.Subgraph(k, dot.ClusterOption{})
+				node := sg.Node(strings.ToUpper(k)).Attr("shape", "parallelogram")
+				nodesMap[k] = node
+				nodes, d := p.visualize(sg, v)
+				for _, d := range v.(*Pipeline).Deps {
+					deps = append(deps, [2]string{d, k})
+				}
+				for name, node := range nodes {
+					nodesMap[name] = node
+					// detect outputs
+					att := node.AttributesMap
+					if att.Value("shape") != nil {
+						deps = append(deps, [2]string{name, k})
+					}
+				}
+				for _, i := range d {
+					deps = append(deps, i)
+				}
+			}
+		}
+	}
+	return nodesMap, deps
+}
+
+func (p Pipeline) Visualize() {
+	di := dot.NewGraph(dot.Directed)
+	nodeMap, deps := p.visualize(di, &p)
+	for _, d := range deps {
+		log.Println(d)
+		di.Edge(nodeMap[d[0]], nodeMap[d[1]])
+	}
+	f, _ := os.Create("graph.dot")
+	di.Write(f)
+	p.tryDot()
+}
+
+func (p Pipeline) tryDot() {
+	c := exec.Command("dot", []string{"-T", "png", "graph.dot", "-o", "graph.png"}...)
+	err := c.Run()
+	if err != nil {
+		log.Fatal(err)
+	} else {
+		log.Println("graphviz ok")
+	}
 }

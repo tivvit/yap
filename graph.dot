@@ -1,0 +1,31 @@
+digraph  {
+	subgraph cluster_s1 {
+		ID = "cluster_s1";
+		label="main";
+		n7[label=<<table BORDER="0" CELLBORDER="1" CELLSPACING="0"><tr><td><b>B</b></td></tr><tr><td><font face="Consolas">ls -la</font></td></tr></table>>,shape="plain"];
+		n6[label="MAIN",shape="parallelogram"];
+		n8[label=<<table BORDER="0" CELLBORDER="1" CELLSPACING="0"><tr><td><b>a</b></td></tr><tr><td><font face="Consolas">ls</font></td></tr></table>>,shape="plain"];
+		n9[label="files.txt"];
+		n10[label="files1.txt"];
+		
+	}subgraph cluster_s0 {
+		ID = "cluster_s0";
+		label="test";
+		n3[label="1.txt"];
+		n1[label="TEST",shape="parallelogram"];
+		n2[label=<<table BORDER="0" CELLBORDER="1" CELLSPACING="0"><tr><td><b>long-eval</b></td></tr><tr><td><font face="Consolas">python3 -c import time; time.sleep(1)</font></td></tr></table>>,shape="plain"];
+		n4[label=<<table BORDER="0" CELLBORDER="1" CELLSPACING="0"><tr><td><b>tst</b></td></tr><tr><td><font face="Consolas">pwd</font></td></tr></table>>,shape="plain"];
+		
+	}
+	n5[label=<<table BORDER="0" CELLBORDER="1" CELLSPACING="0"><tr><td><b>finalize</b></td></tr><tr><td><font face="Consolas">echo hello</font></td></tr></table>>,shape="plain"];
+	n3->n2;
+	n7->n6;
+	n6->n1;
+	n1->n5;
+	n8->n6;
+	n9->n8;
+	n10->n8;
+	n2->n1;
+	n4->n1;
+	
+}

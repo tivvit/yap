@@ -24,6 +24,8 @@ func main() {
 	}
 	log.Println(string(b))
 	log.Println(js)
+	// todo try to call dot
+	p.Visualize()
 	//p.Run(js)
 	// todo generate report
 	// todo generate state
