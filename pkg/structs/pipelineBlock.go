@@ -2,6 +2,11 @@ package structs
 
 type PipelineBlock interface {
 	Run(state State)
+	Checkable
+}
+
+type Checkable interface {
+	Changed(state State) bool
 }
 
 type PipelineBlockBase struct {

@@ -47,6 +47,15 @@ func (p Pipeline) Run(state State) {
 	}
 }
 
+func (p Pipeline) Changed(state State) bool {
+	for _, b := range p.Pipeline {
+		if b.Changed(state) {
+			return true
+		}
+	}
+	return false
+}
+
 func (p *Pipeline) genDepFull(m map[string]PipelineBlock) {
 	// todo check already generated
 	// todo deps for files

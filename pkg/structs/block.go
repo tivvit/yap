@@ -1,11 +1,10 @@
 package structs
 
 import (
-	"bytes"
 	"errors"
 	"github.com/mattn/go-shellwords"
+	"github.com/tivvit/yap/pkg"
 	"log"
-	"os/exec"
 	"strings"
 )
 
@@ -87,44 +86,34 @@ func NewBlockFromMap(name string, m map[string]interface{}) *Block {
 
 func (b Block) Run(state State) {
 	// todo resolve whole name (with path)
-	if !b.changed(state) {
+	if !b.Changed(state) {
 		return
 	}
-	genericRun(b.Exec)
+	pkg.GenericRun(b.Exec)
 	s, err := b.checkState()
 	if err == nil {
 		state.Set(b.Name, s)
 	}
-}
-
-func genericRun(cmd []string) string {
-	log.Println(strings.Join(cmd, " "))
-	c := exec.Command(cmd[0], cmd[1:]...)
-	var out bytes.Buffer
-	c.Stdout = &out
-	err := c.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println(out.String())
-	return out.String()
+	// todo change state of all files
 }
 
 func (b Block) checkState() (string, error) {
-	// todo support checking based on output?
+	// todo support checking based on output? what is the check for then?
 	if len(b.Check) == 0 {
 		log.Printf("phase %s does not support state checking", b.Name)
 		// todo custom error
 		return "", errors.New("phase does not support state check")
 	}
-	return genericRun(b.Check), nil
+	return pkg.GenericRun(b.Check), nil
 }
 
-func (b Block) changed(state State) bool {
+func (b Block) Changed(state State) bool {
 	newState, err := b.checkState()
 	if err != nil {
 		return true
 	}
+	// todo extract file deps
+	//for _, i := range b.DepsFile {}
 	currentState := state.Get(b.Name)
 	if currentState != "" && newState == currentState {
 		log.Printf("phase %s will not run - state did not change", b.Name)

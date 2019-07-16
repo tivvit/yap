@@ -8,6 +8,9 @@ import (
 	"log"
 )
 
+// todo support taint (force run)
+// todo cli options
+
 func main() {
 	js := stateStorage.NewJsonStorage()
 	p := pkg.Load()
