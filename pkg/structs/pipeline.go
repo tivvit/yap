@@ -10,32 +10,26 @@ import (
 	"strings"
 )
 
-type PipelineBlock interface {
-	Run(state State)
-}
-
-// todo common parent for block and pipeline
 // todo files may be output and input
 // todo dependencies for files
 // todo file state checking
 
 type Pipeline struct {
-	Version  float32                  `yaml:"version"`
-	Settings map[string]interface{}   `yaml:"settings,omitempty"`
-	Pipeline map[string]PipelineBlock `yaml:"pipeline"`
-	Deps     []string                 `yaml:"deps"`
-	FullName string                   `yaml:"-"`
-	Map      map[string]PipelineBlock `yaml:"-"`
-	Parent   *Pipeline                `yaml:"-"`
-	DepsFull []string                 `yaml:"-"`
+	*PipelineBlockBase `yaml:",inline"`
+	Version            float32                  `yaml:"version"`
+	Settings           map[string]interface{}   `yaml:"settings,omitempty"`
+	Pipeline           map[string]PipelineBlock `yaml:"pipeline"`
+	Map                map[string]PipelineBlock `yaml:"-"`
 }
 
 func NewPipeline(version float32, settings map[string]interface{}, deps []string) *Pipeline {
 	return &Pipeline{
 		Version:  version,
 		Settings: settings,
-		Deps:     deps,
 		Pipeline: make(map[string]PipelineBlock),
+		PipelineBlockBase: &PipelineBlockBase{
+			Deps: deps,
+		},
 	}
 }
 
@@ -252,6 +246,7 @@ func (p Pipeline) visualize(di *dot.Graph, main *dot.Graph, pipeline PipelineBlo
 		for k, v := range pipeline.(*Pipeline).Pipeline {
 			switch v.(type) {
 			case *Block:
+				// todo add description
 				label := fmt.Sprintf("<table BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\"><tr><td><b>%s</b></td></tr><tr><td><font face=\"Courier New, Courier, monospace\">%s</font></td></tr></table>", k, strings.Join(v.(*Block).Exec, " "))
 				n := di.Node(k).Attr("shape", "plain")
 				n.Attr("label", dot.HTML(label))

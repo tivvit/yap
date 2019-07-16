@@ -10,15 +10,12 @@ import (
 )
 
 type Block struct {
-	Name        string    `yaml:"-"`
-	Description string    `yaml:"desc,omitempty"`
-	Check       []string  `yaml:"check,omitempty"`
-	Exec        []string  `yaml:"exec,omitempty"`
-	Deps        []string  `yaml:"deps,omitempty"`
-	Out         []string  `yaml:"out,omitempty"`
-	FullName    string    `yaml:"-"`
-	Parent      *Pipeline `yaml:"-"`
-	DepsFull    []string  `yaml:"-"`
+	PipelineBlockBase `yaml:",inline"`
+	Name              string   `yaml:"-"`
+	Description       string   `yaml:"desc,omitempty"`
+	Check             []string `yaml:"check,omitempty"`
+	Exec              []string `yaml:"exec,omitempty"`
+	Out               []string `yaml:"out,omitempty"`
 }
 
 type IncludeBlock struct {
@@ -46,7 +43,9 @@ func (b *Block) genDepFull(m map[string]PipelineBlock) {
 }
 
 func NewBlockFromMap(name string, m map[string]interface{}) *Block {
-	b := Block{}
+	b := Block{
+		PipelineBlockBase: PipelineBlockBase{},
+	}
 	b.Name = name
 	// todo keys names based on struct annotation
 	if m["exec"] == nil {

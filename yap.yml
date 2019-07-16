@@ -17,6 +17,7 @@ pipeline:
       - main
   finalize:
     exec: echo "hello"
+    desc: This is the final step
     deps:
       - test
   absolute-dep:
