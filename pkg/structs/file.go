@@ -12,7 +12,7 @@ type File struct {
 	Deps  []*Block
 }
 
-func (f File) md5Checksum() (string, error) {
+func (f File) Checksum() (string, error) {
 	file, err := os.Open(f.Name)
 	if err != nil {
 		return "", err
@@ -30,8 +30,8 @@ func (f File) md5Checksum() (string, error) {
 	return hex.EncodeToString(hashInBytes), nil
 
 }
-func (f File) Changed(state State) bool {
-	md5Sum, err := f.md5Checksum()
+func (f File) Changed(state State, p *Pipeline) bool {
+	md5Sum, err := f.Checksum()
 	if err != nil {
 		return true
 	}

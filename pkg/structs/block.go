@@ -66,15 +66,26 @@ func NewBlockFromMap(name string, m map[string]interface{}) *Block {
 
 func (b Block) Run(state State) {
 	// todo resolve whole name (with path)
-	if !b.Changed(state) {
+	// todo pass pipeline!
+	if !b.Changed(state, nil) {
 		return
 	}
 	utils.GenericRun(b.Exec)
 	s, err := b.checkState()
+	// todo this has to happen atomically - after the run finishes - use old state?
 	if err == nil {
 		state.Set(b.Name, s)
 	}
-	// todo change state of all files
+	// todo swap two states
+	// todo provide file map
+	//for _, f := range b.Out {
+	//	c, err := files[f].Checksum()
+	//	if err != nil {
+	//		log.Println(err)
+	//		continue
+	//	}
+	//	state.Set(f, c)
+	//}
 }
 
 func (b Block) checkState() (string, error) {
@@ -87,13 +98,18 @@ func (b Block) checkState() (string, error) {
 	return utils.GenericRun(b.Check), nil
 }
 
-func (b Block) Changed(state State) bool {
+func (b Block) Changed(state State, p *Pipeline) bool {
 	newState, err := b.checkState()
 	if err != nil {
 		return true
 	}
-	// todo extract file deps
-	//for _, i := range b.DepsFile {}
+	for _, d := range b.DepsFull{
+		if v, ok := p.Map[d]; ok {
+			v.Changed(state, p)
+		} else if v, ok := p.MapFiles[d]; ok {
+			v.Changed(state, p)
+		}
+	}
 	currentState := state.Get(b.Name)
 	if currentState != "" && newState == currentState {
 		log.Printf("phase %s will not run - state did not change", b.Name)

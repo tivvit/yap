@@ -11,6 +11,7 @@ pipeline:
     include: test.yml
     deps:
       - main
+      - 1.txt
   test-again:
     include: test.yml
     deps:

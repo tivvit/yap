@@ -11,7 +11,7 @@ type PipelineBlock interface {
 }
 
 type Checkable interface {
-	Changed(state State) bool
+	Changed(state State, p *Pipeline) bool
 }
 
 type PipelineBlockBase struct {
@@ -25,7 +25,6 @@ func (p *PipelineBlockBase) genDepFull() {
 	if len(p.DepsFull) > 0 {
 		return
 	}
-	// todo deps for files
 	for _, d := range p.Deps {
 		if strings.HasPrefix(d, "/") {
 			p.DepsFull = append(p.DepsFull, d)
@@ -38,8 +37,8 @@ func (p *PipelineBlockBase) genDepFull() {
 					p.DepsFull = append(p.DepsFull, db.(*Pipeline).FullName)
 				}
 			} else {
-				log.Println("non module dependency", d)
-				// todo this is probably file
+				log.Println("non-module dependency", d)
+				p.DepsFull = append(p.DepsFull, d)
 			}
 		}
 	}

@@ -10,15 +10,13 @@ import (
 	"strings"
 )
 
-// todo files may be output and input
-// todo dependencies for files
-
 type Pipeline struct {
 	*PipelineBlockBase `yaml:",inline"`
 	Version            float32                  `yaml:"version"`
 	Settings           map[string]interface{}   `yaml:"settings,omitempty"`
 	Pipeline           map[string]PipelineBlock `yaml:"pipeline"`
 	Map                map[string]PipelineBlock `yaml:"-"`
+	MapFiles           map[string]*File          `yaml:"-"`
 }
 
 func NewPipeline(version float32, settings map[string]interface{}, deps []string) *Pipeline {
@@ -26,6 +24,7 @@ func NewPipeline(version float32, settings map[string]interface{}, deps []string
 		Version:  version,
 		Settings: settings,
 		Pipeline: make(map[string]PipelineBlock),
+		MapFiles: make(map[string]*File),
 		PipelineBlockBase: &PipelineBlockBase{
 			Deps: deps,
 		},
@@ -46,9 +45,9 @@ func (p Pipeline) Run(state State) {
 	}
 }
 
-func (p Pipeline) Changed(state State) bool {
+func (pl Pipeline) Changed(state State, p *Pipeline) bool {
 	for _, b := range p.Pipeline {
-		if b.Changed(state) {
+		if b.Changed(state, p) {
 			return true
 		}
 	}
@@ -120,11 +119,50 @@ func (p Pipeline) flatten(pb PipelineBlock) map[string]PipelineBlock {
 	return r
 }
 
+func (p Pipeline) addFile(name string) *File {
+	if f, ok := p.MapFiles[name]; ok {
+		return f
+	} else {
+		p.MapFiles[name] = &File{
+			Name: name,
+		}
+		return p.MapFiles[name]
+	}
+}
+
+
+func (p *Pipeline) files() {
+	var f *File
+	for _, d := range p.Map {
+		switch d.(type) {
+		case *Block:
+			for _, o := range d.(*Block).Out {
+				f = p.addFile(o)
+				f.Deps = append(f.Deps, d.(*Block))
+			}
+			for _, i := range d.(*Block).DepsFull {
+				// not a block = it is a file
+				if _, ok := p.Map[i]; !ok {
+					f = p.addFile(i)
+				}
+			}
+		case *Pipeline:
+			for _, i := range d.(*Pipeline).DepsFull {
+				// not a block = it is a file
+				if _, ok := p.Map[i]; !ok {
+					f = p.addFile(i)
+				}
+			}
+		}
+	}
+}
+
 func (p *Pipeline) Enrich() {
 	p.names("", p)
 	p.parents(p)
 	p.Map = p.flatten(p)
 	p.genDepFullRec(p)
+	p.files()
 }
 
 // todo outputs with blocks references
@@ -143,7 +181,7 @@ func stages(p PipelineBlock, prefix string) map[string]PipelineBlock {
 			}
 			switch v.(type) {
 			case *Pipeline:
-				// todo this can cause name clash
+				// todo this can cause name clash = it should not due to namespacing
 				for n, block := range stages(v.(*Pipeline), name) {
 					r[n] = block
 				}

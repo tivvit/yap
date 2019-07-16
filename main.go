@@ -24,6 +24,7 @@ func main() {
 	//}
 	// todo user input
 	log.Println("map", p.Map)
+	log.Println("mapFile", p.MapFiles)
 	log.Println("parent", p.Parent)
 	log.Println(p.Pipeline["test"].(*structs.Pipeline).DepsFull)
 	log.Println(p.Pipeline["finalize"].(*structs.Block).DepsFull)
