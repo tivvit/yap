@@ -20,7 +20,9 @@ func Load() *structs.Pipeline {
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
-	return ParsePipeline(&p)
+	pp := ParsePipeline(&p)
+	pp.Enrich()
+	return pp
 }
 
 func LoadFile(fileName string) *structs.PipelineRaw {

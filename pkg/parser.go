@@ -35,14 +35,16 @@ func ParsePipeline(raw *structs.PipelineRaw) *structs.Pipeline {
 			//log.Println("\t", t)
 			switch t {
 			case "script":
+				// todo script may fail
 				ip := LoadScript(name)
 				//log.Println(ip)
+				pp := ParsePipeline(ip)
 				if deps, ok := vm[DepsKeyword]; ok {
 					for _, i := range deps.([]interface{}) {
-						ip.Deps = append(ip.Deps, i.(string))
+						pp.Deps = append(pp.Deps, i.(string))
 					}
 				}
-				p.Pipeline[k] = ParsePipeline(ip)
+				p.Pipeline[k] = pp
 			case "yaml":
 				ip := LoadFile(name)
 				//log.Println(ip)
@@ -61,6 +63,5 @@ func ParsePipeline(raw *structs.PipelineRaw) *structs.Pipeline {
 			p.Pipeline[k] = structs.NewBlockFromMap(k, vm)
 		}
 	}
-	p.Enrich()
 	return p
 }

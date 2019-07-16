@@ -24,3 +24,4 @@ pipeline:
     exec: echo "world"
     deps:
       - /main/a
+      - 1.txt

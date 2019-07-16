@@ -3,9 +3,8 @@ package structs
 import (
 	"errors"
 	"github.com/mattn/go-shellwords"
-	"github.com/tivvit/yap/pkg"
+	"github.com/tivvit/yap/pkg/utils"
 	"log"
-	"strings"
 )
 
 type Block struct {
@@ -20,25 +19,6 @@ type Block struct {
 type IncludeBlock struct {
 	Include string
 	Type    string
-}
-
-func (b *Block) genDepFull(m map[string]PipelineBlock) {
-	// todo check already generated
-	// todo deps for files
-	for _, d := range b.Deps {
-		if strings.HasPrefix(d, "/") {
-			b.DepsFull = append(b.DepsFull, d)
-		} else {
-			if db, ok := b.Parent.Pipeline[d]; ok {
-				switch db.(type) {
-				case *Block:
-					b.DepsFull = append(b.DepsFull, db.(*Block).FullName)
-				case *Pipeline:
-					b.DepsFull = append(b.DepsFull, db.(*Pipeline).FullName)
-				}
-			}
-		}
-	}
 }
 
 func NewBlockFromMap(name string, m map[string]interface{}) *Block {
@@ -89,7 +69,7 @@ func (b Block) Run(state State) {
 	if !b.Changed(state) {
 		return
 	}
-	pkg.GenericRun(b.Exec)
+	utils.GenericRun(b.Exec)
 	s, err := b.checkState()
 	if err == nil {
 		state.Set(b.Name, s)
@@ -104,7 +84,7 @@ func (b Block) checkState() (string, error) {
 		// todo custom error
 		return "", errors.New("phase does not support state check")
 	}
-	return pkg.GenericRun(b.Check), nil
+	return utils.GenericRun(b.Check), nil
 }
 
 func (b Block) Changed(state State) bool {

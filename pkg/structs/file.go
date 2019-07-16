@@ -8,9 +8,8 @@ import (
 )
 
 type File struct {
-	Name     string
-	Creators []*Block
-	Users    []*PipelineBlock
+	Name  string
+	Deps  []*Block
 }
 
 func (f File) md5Checksum() (string, error) {

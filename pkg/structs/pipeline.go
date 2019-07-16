@@ -12,7 +12,6 @@ import (
 
 // todo files may be output and input
 // todo dependencies for files
-// todo file state checking
 
 type Pipeline struct {
 	*PipelineBlockBase `yaml:",inline"`
@@ -56,34 +55,15 @@ func (p Pipeline) Changed(state State) bool {
 	return false
 }
 
-func (p *Pipeline) genDepFull(m map[string]PipelineBlock) {
-	// todo check already generated
-	// todo deps for files
-	for _, d := range p.Deps {
-		if strings.HasPrefix(d, "/") {
-			p.DepsFull = append(p.DepsFull, d)
-		} else {
-			if db, ok := p.Parent.Pipeline[d]; ok {
-				switch db.(type) {
-				case *Block:
-					p.DepsFull = append(p.DepsFull, db.(*Block).FullName)
-				case *Pipeline:
-					p.DepsFull = append(p.DepsFull, db.(*Pipeline).FullName)
-				}
-			}
-		}
-	}
-}
-
-func (p *Pipeline) genDepFullRec(pb PipelineBlock, m map[string]PipelineBlock) {
+func (p *Pipeline) genDepFullRec(pb PipelineBlock) {
 	switch pb.(type) {
 	case *Block:
-		pb.(*Block).genDepFull(m)
+		pb.(*Block).genDepFull()
 	case *Pipeline:
 		for _, v := range pb.(*Pipeline).Pipeline {
-			p.genDepFullRec(v, m)
+			p.genDepFullRec(v)
 		}
-		pb.(*Pipeline).genDepFull(m)
+		pb.(*Pipeline).genDepFull()
 	}
 }
 
@@ -144,7 +124,7 @@ func (p *Pipeline) Enrich() {
 	p.names("", p)
 	p.parents(p)
 	p.Map = p.flatten(p)
-	p.genDepFullRec(p, p.Map)
+	p.genDepFullRec(p)
 }
 
 // todo outputs with blocks references
@@ -255,19 +235,29 @@ func (p Pipeline) visualize(di *dot.Graph, main *dot.Graph, pipeline PipelineBlo
 		for k, v := range pipeline.(*Pipeline).Pipeline {
 			switch v.(type) {
 			case *Block:
-				// todo add description
-				label := fmt.Sprintf("<table BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\"><tr><td><b>%s</b></td></tr><tr><td><font face=\"Courier New, Courier, monospace\">%s</font></td></tr></table>", k, strings.Join(v.(*Block).Exec, " "))
+				b := v.(*Block)
+				nameFmt := "<tr><td><b>%s</b></td></tr>"
+				name := fmt.Sprintf(nameFmt, k)
+				cmdFmt := `<tr><td><font face="Courier New, Courier, monospace">%s</font></td></tr>`
+				cmd := fmt.Sprintf(cmdFmt, strings.Join(b.Exec, " "))
+				descFmt := "<tr><td>%s</td></tr>"
+				desc := ""
+				if b.Description != "" {
+					desc = fmt.Sprintf(descFmt, b.Description)
+				}
+				tableFmt := `<table border="0" cellborder="1" cellspacing="0">%s%s%s</table>`
+				label := fmt.Sprintf(fmt.Sprintf(tableFmt, name, desc, cmd))
 				n := di.Node(k).Attr("shape", "plain")
 				n.Attr("label", dot.HTML(label))
 				nodesMap[v.(*Block).FullName] = n
 				//for _, d := range v.(*Block).Deps {
 				//	deps = append(deps, [2]string{d, k})
 				//}
+				// todo add file deps
 				for _, o := range v.(*Block).Out {
 					ob := main.Node(o)
 					nodesMap[o] = ob
-					deps = append(deps, [2]string{o, v.(*Block).FullName})
-					// todo add file writers
+					deps = append(deps, [2]string{v.(*Block).FullName, o})
 				}
 			case *Pipeline:
 				sg := di.Subgraph(k, dot.ClusterOption{})
@@ -279,6 +269,7 @@ func (p Pipeline) visualize(di *dot.Graph, main *dot.Graph, pipeline PipelineBlo
 				//}
 				for name, node := range nodes {
 					nodesMap[name] = node
+					log.Println(name)
 					// detect outputs
 					att := node.AttributesMap
 					if att.Value("shape") != nil {

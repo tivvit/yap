@@ -5,5 +5,7 @@ pipeline:
   long-eval:
     exec: python3 -c "import time; time.sleep(1)"
     check: echo "1"
+    deps:
+      - test
     out:
       - 1.txt

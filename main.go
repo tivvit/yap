@@ -19,6 +19,9 @@ func main() {
 		log.Fatalln(err)
 	}
 	log.Println(string(b))
+	//for k := range p.Map {
+	//	log.Println(k)
+	//}
 	// todo user input
 	log.Println("map", p.Map)
 	log.Println("parent", p.Parent)
