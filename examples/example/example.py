@@ -1,4 +1,4 @@
-import yap
+from context import yap
 
 p = yap.Pipeline(settings={
     "state": {

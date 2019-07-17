@@ -16,7 +16,7 @@ type Pipeline struct {
 	Settings           map[string]interface{}   `yaml:"settings,omitempty"`
 	Pipeline           map[string]PipelineBlock `yaml:"pipeline"`
 	Map                map[string]PipelineBlock `yaml:"-"`
-	MapFiles           map[string]*File          `yaml:"-"`
+	MapFiles           map[string]*File         `yaml:"-"`
 }
 
 func NewPipeline(version float32, settings map[string]interface{}, deps []string) *Pipeline {
@@ -129,7 +129,6 @@ func (p Pipeline) addFile(name string) *File {
 		return p.MapFiles[name]
 	}
 }
-
 
 func (p *Pipeline) files() {
 	var f *File
@@ -288,10 +287,6 @@ func (p Pipeline) visualize(di *dot.Graph, main *dot.Graph, pipeline PipelineBlo
 				n := di.Node(k).Attr("shape", "plain")
 				n.Attr("label", dot.HTML(label))
 				nodesMap[v.(*Block).FullName] = n
-				//for _, d := range v.(*Block).Deps {
-				//	deps = append(deps, [2]string{d, k})
-				//}
-				// todo add file deps
 				for _, o := range v.(*Block).Out {
 					ob := main.Node(o)
 					nodesMap[o] = ob
@@ -302,9 +297,6 @@ func (p Pipeline) visualize(di *dot.Graph, main *dot.Graph, pipeline PipelineBlo
 				node := sg.Node(strings.ToUpper(k)).Attr("shape", "parallelogram")
 				nodesMap[v.(*Pipeline).FullName] = node
 				nodes, d := p.visualize(sg, main, v)
-				//for _, d := range v.(*Pipeline).Deps {
-				//	deps = append(deps, [2]string{d, k})
-				//}
 				for name, node := range nodes {
 					nodesMap[name] = node
 					log.Println(name)

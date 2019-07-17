@@ -10,8 +10,8 @@ digraph  {
 		ID = "cluster_s1";
 		label="test";
 		n6[label="TEST",shape="parallelogram"];
-		n8[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>long-eval</b></td></tr><tr><td><font face="Courier New, Courier, monospace">python3 -c import time; time.sleep(1)</font></td></tr></table>>,shape="plain"];
-		n7[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>test</b></td></tr><tr><td><font face="Courier New, Courier, monospace">pwd</font></td></tr></table>>,shape="plain"];
+		n7[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>long-eval</b></td></tr><tr><td><font face="Courier New, Courier, monospace">python3 -c import time; time.sleep(1)</font></td></tr></table>>,shape="plain"];
+		n9[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>test</b></td></tr><tr><td><font face="Courier New, Courier, monospace">pwd</font></td></tr></table>>,shape="plain"];
 		
 	}subgraph cluster_s2 {
 		ID = "cluster_s2";
@@ -21,13 +21,13 @@ digraph  {
 		n11[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>test</b></td></tr><tr><td><font face="Courier New, Courier, monospace">pwd</font></td></tr></table>>,shape="plain"];
 		
 	}
-	n9[label="1.txt"];
+	n8[label="1.txt"];
 	n14[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>absolute-dep</b></td></tr><tr><td><font face="Courier New, Courier, monospace">echo world</font></td></tr></table>>,shape="plain"];
 	n4[label="files.txt"];
 	n5[label="files1.txt"];
 	n13[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>finalize</b></td></tr><tr><td>This is the final step</td></tr><tr><td><font face="Courier New, Courier, monospace">echo hello</font></td></tr></table>>,shape="plain"];
-	n9->n6;
-	n9->n14;
+	n8->n14;
+	n8->n6;
 	n2->n1;
 	n1->n6;
 	n1->n10;
@@ -37,13 +37,13 @@ digraph  {
 	n3->n1;
 	n3->n4;
 	n3->n5;
-	n8->n6;
-	n8->n9;
-	n12->n10;
-	n12->n9;
-	n7->n8;
-	n11->n12;
 	n7->n6;
+	n7->n8;
+	n12->n10;
+	n12->n8;
+	n9->n7;
+	n11->n12;
+	n9->n6;
 	n11->n10;
 	
 }

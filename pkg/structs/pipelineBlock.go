@@ -26,6 +26,7 @@ func (p *PipelineBlockBase) genDepFull() {
 		return
 	}
 	for _, d := range p.Deps {
+		// todo this may be file with absolute path
 		if strings.HasPrefix(d, "/") {
 			p.DepsFull = append(p.DepsFull, d)
 		} else {

@@ -35,8 +35,10 @@ func ParsePipeline(raw *structs.PipelineRaw) *structs.Pipeline {
 			//log.Println("\t", t)
 			switch t {
 			case "script":
-				// todo script may fail
-				ip := LoadScript(name)
+				ip, err := LoadScript(name)
+				if err != nil {
+					continue
+				}
 				//log.Println(ip)
 				pp := ParsePipeline(ip)
 				if deps, ok := vm[DepsKeyword]; ok {

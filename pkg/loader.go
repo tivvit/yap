@@ -40,19 +40,19 @@ func LoadFile(fileName string) *structs.PipelineRaw {
 	return &p
 }
 
-func LoadScript(name string) *structs.PipelineRaw {
+func LoadScript(name string) (*structs.PipelineRaw, error) {
 	cmd := exec.Command("python3", name)
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	err := cmd.Run()
 	if err != nil {
-		log.Fatal(err)
+		log.Println("script call failed: ", err)
+		return nil, err
 	}
-	//fmt.Printf("%v", out.String())
 	p := structs.PipelineRaw{}
 	err = yaml.Unmarshal(out.Bytes(), &p)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
-	return &p
+	return &p, nil
 }
