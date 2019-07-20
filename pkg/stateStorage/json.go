@@ -23,7 +23,7 @@ func (js *jsonStorage) Delete(key string) {
 }
 
 func (js jsonStorage) write() {
-	b, err := json.Marshal(js)
+	b, err := json.MarshalIndent(js, "", "\t")
 	if err != nil {
 		log.Fatalln(err)
 	}

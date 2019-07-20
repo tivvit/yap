@@ -60,7 +60,9 @@ func (p Pipeline) GetState() (string, error) {
 	m := make(map[string]string)
 	for _, b := range p.Pipeline {
 		st, err := b.GetState()
-		if err == nil {
+		if err != nil {
+			m[b.GetFullName()] = ""
+		} else {
 			m[b.GetFullName()] = st
 		}
 	}
@@ -68,7 +70,12 @@ func (p Pipeline) GetState() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return string(jb), nil
+	ch := string(jb)
+	//ch, err := utils.Md5Checksum(bytes.NewReader(jb))
+	//if err != nil {
+	//	return "", err
+	//}
+	return ch, nil
 }
 
 func (p *Pipeline) genDepFullRec(pb PipelineBlock) {
@@ -341,6 +348,10 @@ func (p Pipeline) Visualize() {
 		case *Block:
 			b := n.(*Block)
 			for _, t := range b.DepsFull {
+				if _, ok := nodeMap[t]; !ok {
+					// has to be missing file
+					nodeMap[t] = di.Node(t)
+				}
 				di.Edge(nodeMap[t], nodeMap[b.FullName])
 			}
 		case *Pipeline:

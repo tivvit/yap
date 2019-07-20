@@ -26,3 +26,7 @@ pipeline:
     deps:
       - /main/a
       - 1.txt
+  dir-dep:
+    exec: ls in
+    deps:
+      - in

@@ -3,6 +3,7 @@ package pkg
 import (
 	"bytes"
 	"github.com/tivvit/yap/pkg/structs"
+	"github.com/tivvit/yap/pkg/utils"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"log"
@@ -10,7 +11,7 @@ import (
 )
 
 func Load() *structs.Pipeline {
-	b, err := ioutil.ReadFile(MainFile)
+	b, err := ioutil.ReadFile(utils.MainFile)
 	if err != nil {
 		log.Printf("load yap.yml err #%v ", err)
 	}

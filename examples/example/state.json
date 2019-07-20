@@ -1,1 +1,14 @@
-{"long-eval":"1\n"}
+{
+	"/test-again/long-eval": "b026324c6904b2a9cb4b88d6d61c81d1",
+	"/test/long-eval": "b026324c6904b2a9cb4b88d6d61c81d1",
+	"1.txt": "c4ca4238a0b923820dcc509a6f75849b",
+	"deps:/absolute-dep": "{\"/main/a\":\"\",\"1.txt\":\"c4ca4238a0b923820dcc509a6f75849b\"}",
+	"deps:/dir-dep": "{\"in\":\"\"}",
+	"deps:/finalize": "{\"/test\":\"{\\\"/test/long-eval\\\":\\\"b026324c6904b2a9cb4b88d6d61c81d1\\\",\\\"/test/test\\\":\\\"\\\"}\"}",
+	"deps:/main/B": "{\"/main/a\":\"\"}",
+	"deps:/main/a": "{}",
+	"deps:/test-again/long-eval": "{\"/test-again/test\":\"\"}",
+	"deps:/test-again/test": "{}",
+	"deps:/test/long-eval": "{\"/test/test\":\"\"}",
+	"deps:/test/test": "{}"
+}

@@ -2,9 +2,9 @@ digraph  {
 	subgraph cluster_s0 {
 		ID = "cluster_s0";
 		label="main";
-		n2[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>B</b></td></tr><tr><td><font face="Courier New, Courier, monospace">ls -la</font></td></tr></table>>,shape="plain"];
+		n5[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>B</b></td></tr><tr><td><font face="Courier New, Courier, monospace">ls -la</font></td></tr></table>>,shape="plain"];
 		n1[label="MAIN",shape="parallelogram"];
-		n3[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>a</b></td></tr><tr><td><font face="Courier New, Courier, monospace">ls</font></td></tr></table>>,shape="plain"];
+		n2[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>a</b></td></tr><tr><td><font face="Courier New, Courier, monospace">ls</font></td></tr></table>>,shape="plain"];
 		
 	}subgraph cluster_s1 {
 		ID = "cluster_s1";
@@ -23,26 +23,29 @@ digraph  {
 	}
 	n8[label="1.txt"];
 	n14[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>absolute-dep</b></td></tr><tr><td><font face="Courier New, Courier, monospace">echo world</font></td></tr></table>>,shape="plain"];
-	n4[label="files.txt"];
-	n5[label="files1.txt"];
+	n15[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>dir-dep</b></td></tr><tr><td><font face="Courier New, Courier, monospace">ls in</font></td></tr></table>>,shape="plain"];
+	n3[label="files.txt"];
+	n4[label="files1.txt"];
 	n13[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>finalize</b></td></tr><tr><td>This is the final step</td></tr><tr><td><font face="Courier New, Courier, monospace">echo hello</font></td></tr></table>>,shape="plain"];
-	n8->n14;
+	n16[label="in"];
 	n8->n6;
-	n2->n1;
+	n8->n14;
+	n5->n1;
 	n1->n6;
 	n1->n10;
 	n6->n13;
-	n3->n14;
-	n3->n2;
-	n3->n1;
-	n3->n4;
-	n3->n5;
+	n2->n14;
+	n2->n5;
+	n2->n1;
+	n2->n3;
+	n2->n4;
+	n16->n15;
 	n7->n6;
 	n7->n8;
 	n12->n10;
 	n12->n8;
-	n9->n7;
 	n11->n12;
+	n9->n7;
 	n9->n6;
 	n11->n10;
 	

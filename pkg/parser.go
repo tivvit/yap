@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"github.com/tivvit/yap/pkg/structs"
+	"github.com/tivvit/yap/pkg/utils"
 	"log"
 )
 
@@ -24,12 +25,12 @@ func parsePipelinev1(raw *structs.PipelineRaw) *structs.Pipeline {
 			}
 			vm = tmp
 		}
-		if _, ik := vm[IncludeKeyword]; ik {
+		if _, ik := vm[utils.IncludeKeyword]; ik {
 			//log.Println("\tdetected import")
-			name := vm[IncludeKeyword].(string)
+			name := vm[utils.IncludeKeyword].(string)
 			t := "yaml"
-			if _, iik := vm[TypeKeyword]; iik {
-				t = vm[TypeKeyword].(string)
+			if _, iik := vm[utils.TypeKeyword]; iik {
+				t = vm[utils.TypeKeyword].(string)
 			}
 			//log.Println("\t", t)
 			switch t {
@@ -40,7 +41,7 @@ func parsePipelinev1(raw *structs.PipelineRaw) *structs.Pipeline {
 				}
 				//log.Println(ip)
 				pp := ParsePipeline(ip)
-				if deps, ok := vm[DepsKeyword]; ok {
+				if deps, ok := vm[utils.DepsKeyword]; ok {
 					for _, i := range deps.([]interface{}) {
 						pp.Deps = append(pp.Deps, i.(string))
 					}
@@ -51,7 +52,7 @@ func parsePipelinev1(raw *structs.PipelineRaw) *structs.Pipeline {
 				//log.Println(ip)
 				pp := ParsePipeline(ip)
 				//log.Println(pp)
-				if deps, ok := vm[DepsKeyword]; ok {
+				if deps, ok := vm[utils.DepsKeyword]; ok {
 					for _, i := range deps.([]interface{}) {
 						pp.Deps = append(pp.Deps, i.(string))
 					}

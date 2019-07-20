@@ -3,30 +3,30 @@ package structs
 import (
 	"github.com/tivvit/yap/pkg/stateStorage"
 	"github.com/tivvit/yap/pkg/utils"
-	"io"
+	"log"
 	"os"
 )
 
 type File struct {
 	Name  string
 	Deps  []*Block
-}
-
-func (f File) openFile() (io.Reader, error) {
-	file, err := os.Open(f.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	defer file.Close()
-	return file, nil
+	// todo isDir
+	// todo create time
 }
 
 func (f File) GetState() (string, error) {
-	r, err := f.openFile()
+	r, err := os.Open(f.Name)
 	if err != nil {
 		return "", err
 	}
+
+	defer func () {
+		err := r.Close()
+		if err != nil {
+			log.Println(err)
+		}
+	}()
+
 	return utils.Md5Checksum(r)
 }
 

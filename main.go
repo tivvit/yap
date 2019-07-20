@@ -42,8 +42,9 @@ func main() {
 	}
 	log.Println(string(b))
 	log.Println(js)
+	// todo support directory dependency
 	p.Visualize()
-	//p.Run(js)
+	p.Run(js, p)
 	// todo generate report
 	// todo generate state
 	// todo generate

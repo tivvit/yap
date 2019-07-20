@@ -1,6 +1,7 @@
 package structs
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/mattn/go-shellwords"
 	"github.com/tivvit/yap/pkg/stateStorage"
@@ -67,27 +68,36 @@ func NewBlockFromMap(name string, m map[string]interface{}) *Block {
 }
 
 func (b Block) Run(state stateStorage.State, p *Pipeline) {
-	if !b.Changed(state, nil) {
+	if !b.Changed(state, p) {
 		return
 	}
 
 	initState := make(map[string]string)
 	for _, d := range b.DepsFull {
-		st, err := p.Map[d].GetState()
-		if err != nil {
+		var st string
+		var err error
+		if v, ok := p.Map[d]; ok {
+			st, err = v.GetState()
+		} else if v, ok := p.MapFiles[d]; ok {
+			st, err = v.GetState()
+		} else {
+			log.Println(d, "NOT FOUND")
 			continue
+		}
+		if err != nil {
+			log.Println(err)
+			st = ""
 		}
 		initState[d] = st
 	}
 
 	utils.GenericRun(b.Exec)
 	s, err := b.GetState()
-	if err == nil {
-		cs, err := utils.Md5Checksum(strings.NewReader(s))
-		if err != nil {
-			state.Set(b.Name, cs)
-		} // todo handle err
-	} // todo inform about error?
+	if err != nil {
+		log.Println(err)
+	} else {
+		state.Set(b.FullName, s)
+	}
 
 	for _, f := range b.Out {
 		c, err := p.MapFiles[f].GetState()
@@ -98,15 +108,17 @@ func (b Block) Run(state stateStorage.State, p *Pipeline) {
 		state.Set(f, c)
 	}
 
-	// todo store state of all deps before run
-
-	for _, d := range b.DepsFull {
-
+	js, err := json.Marshal(initState)
+	if err != nil {
+		log.Println("json marshall error:", err)
+		return
 	}
+
+	state.Set(utils.DepsPrefix + b.FullName, string(js))
 }
 
 func (b Block) GetState() (string, error) {
-	// todo support checking based on output? what is the check for then?
+	// todo this should be used for checking external deps (i.e. download over internet)
 	if len(b.Check) == 0 {
 		log.Printf("phase %s does not support state checking", b.Name)
 		// todo custom error
@@ -115,9 +127,9 @@ func (b Block) GetState() (string, error) {
 	out := utils.GenericRun(b.Check)
 	cs, err := utils.Md5Checksum(strings.NewReader(out))
 	if err != nil {
-		return cs, nil
+		return "EMPTY", err
 	}
-	return "", err
+	return cs, nil
 }
 
 func (b Block) Changed(state stateStorage.State, p *Pipeline) bool {
