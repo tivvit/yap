@@ -5,10 +5,9 @@ import (
 	"log"
 )
 
-func ParsePipeline(raw *structs.PipelineRaw) *structs.Pipeline {
+func parsePipelinev1(raw *structs.PipelineRaw) *structs.Pipeline {
 	// todo check duplicate keys (is it even possible here? - yaml solves that?)
 	p := structs.NewPipeline(raw.Version, raw.Settings, raw.Deps)
-	// todo check version and determine loader
 	for k, v := range (*raw).Pipeline {
 		//log.Println(k, v)
 		vm, ok := v.(map[string]interface{})
@@ -66,4 +65,13 @@ func ParsePipeline(raw *structs.PipelineRaw) *structs.Pipeline {
 		}
 	}
 	return p
+}
+
+func ParsePipeline(raw *structs.PipelineRaw) *structs.Pipeline {
+	switch raw.Version {
+	case 1.0:
+		return parsePipelinev1(raw)
+	}
+	log.Fatal("Unsupported pipeline version")
+	return nil
 }

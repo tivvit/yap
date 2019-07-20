@@ -3,8 +3,10 @@ package structs
 import (
 	"errors"
 	"github.com/mattn/go-shellwords"
+	"github.com/tivvit/yap/pkg/stateStorage"
 	"github.com/tivvit/yap/pkg/utils"
 	"log"
+	"strings"
 )
 
 type Block struct {
@@ -64,46 +66,67 @@ func NewBlockFromMap(name string, m map[string]interface{}) *Block {
 	return &b
 }
 
-func (b Block) Run(state State) {
-	// todo resolve whole name (with path)
-	// todo pass pipeline!
+func (b Block) Run(state stateStorage.State, p *Pipeline) {
 	if !b.Changed(state, nil) {
 		return
 	}
-	utils.GenericRun(b.Exec)
-	s, err := b.checkState()
-	// todo this has to happen atomically - after the run finishes - use old state?
-	if err == nil {
-		state.Set(b.Name, s)
+
+	initState := make(map[string]string)
+	for _, d := range b.DepsFull {
+		st, err := p.Map[d].GetState()
+		if err != nil {
+			continue
+		}
+		initState[d] = st
 	}
-	// todo swap two states
-	// todo provide file map
-	//for _, f := range b.Out {
-	//	c, err := files[f].Checksum()
-	//	if err != nil {
-	//		log.Println(err)
-	//		continue
-	//	}
-	//	state.Set(f, c)
-	//}
+
+	utils.GenericRun(b.Exec)
+	s, err := b.GetState()
+	if err == nil {
+		cs, err := utils.Md5Checksum(strings.NewReader(s))
+		if err != nil {
+			state.Set(b.Name, cs)
+		} // todo handle err
+	} // todo inform about error?
+
+	for _, f := range b.Out {
+		c, err := p.MapFiles[f].GetState()
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		state.Set(f, c)
+	}
+
+	// todo store state of all deps before run
+
+	for _, d := range b.DepsFull {
+
+	}
 }
 
-func (b Block) checkState() (string, error) {
+func (b Block) GetState() (string, error) {
 	// todo support checking based on output? what is the check for then?
 	if len(b.Check) == 0 {
 		log.Printf("phase %s does not support state checking", b.Name)
 		// todo custom error
 		return "", errors.New("phase does not support state check")
 	}
-	return utils.GenericRun(b.Check), nil
+	out := utils.GenericRun(b.Check)
+	cs, err := utils.Md5Checksum(strings.NewReader(out))
+	if err != nil {
+		return cs, nil
+	}
+	return "", err
 }
 
-func (b Block) Changed(state State, p *Pipeline) bool {
-	newState, err := b.checkState()
+func (b Block) Changed(state stateStorage.State, p *Pipeline) bool {
+	// todo review
+	newState, err := b.GetState()
 	if err != nil {
 		return true
 	}
-	for _, d := range b.DepsFull{
+	for _, d := range b.DepsFull {
 		if v, ok := p.Map[d]; ok {
 			v.Changed(state, p)
 		} else if v, ok := p.MapFiles[d]; ok {

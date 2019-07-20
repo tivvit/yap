@@ -27,6 +27,9 @@ func main() {
 	log.Println("mapFiles")
 	for k, f := range p.MapFiles {
 		log.Println(k, f.Name, f.Deps)
+		for _, d := range f.Deps {
+			log.Println(d.FullName)
+		}
 	}
 	log.Println("parent", p.Parent)
 	log.Println(p.Pipeline["test"].(*structs.Pipeline).DepsFull)
@@ -39,7 +42,6 @@ func main() {
 	}
 	log.Println(string(b))
 	log.Println(js)
-	// todo try to call dot
 	p.Visualize()
 	//p.Run(js)
 	// todo generate report

@@ -10,6 +10,19 @@ type jsonStorage map[string]string
 
 func (js *jsonStorage) Set(key string, value string) {
 	(*js)[key] = value
+	js.write()
+}
+
+func (js *jsonStorage) Get(key string) string {
+	return (*js)[key]
+}
+
+func (js *jsonStorage) Delete(key string) {
+	delete(*js, key)
+	js.write()
+}
+
+func (js jsonStorage) write() {
 	b, err := json.Marshal(js)
 	if err != nil {
 		log.Fatalln(err)
@@ -20,12 +33,9 @@ func (js *jsonStorage) Set(key string, value string) {
 	}
 }
 
-func (js *jsonStorage) Get(key string) string {
-	return (*js)[key]
-}
-
 func NewJsonStorage() *jsonStorage {
 	js := jsonStorage{}
+	// todo configurable
 	b, err := ioutil.ReadFile("state.json")
 	if err != nil {
 		log.Println(err)

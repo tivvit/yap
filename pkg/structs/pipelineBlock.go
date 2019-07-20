@@ -1,17 +1,20 @@
 package structs
 
 import (
+	"github.com/tivvit/yap/pkg/stateStorage"
 	"log"
 	"strings"
 )
 
 type PipelineBlock interface {
-	Run(state State)
+	Run(state stateStorage.State, p *Pipeline)
 	Checkable
+	GetFullName() string
 }
 
 type Checkable interface {
-	Changed(state State, p *Pipeline) bool
+	Changed(state stateStorage.State, p *Pipeline) bool
+	GetState() (string, error)
 }
 
 type PipelineBlockBase struct {
@@ -31,16 +34,15 @@ func (p *PipelineBlockBase) genDepFull() {
 			p.DepsFull = append(p.DepsFull, d)
 		} else {
 			if db, ok := p.Parent.Pipeline[d]; ok {
-				switch db.(type) {
-				case *Block:
-					p.DepsFull = append(p.DepsFull, db.(*Block).FullName)
-				case *Pipeline:
-					p.DepsFull = append(p.DepsFull, db.(*Pipeline).FullName)
-				}
+				p.DepsFull = append(p.DepsFull, db.GetFullName())
 			} else {
 				log.Println("non-module dependency", d)
 				p.DepsFull = append(p.DepsFull, d)
 			}
 		}
 	}
+}
+
+func (p PipelineBlockBase) GetFullName() string {
+	return p.FullName
 }

@@ -1,8 +1,8 @@
 package structs
 
 import (
-	"crypto/md5"
-	"encoding/hex"
+	"github.com/tivvit/yap/pkg/stateStorage"
+	"github.com/tivvit/yap/pkg/utils"
 	"io"
 	"os"
 )
@@ -12,26 +12,26 @@ type File struct {
 	Deps  []*Block
 }
 
-func (f File) Checksum() (string, error) {
+func (f File) openFile() (io.Reader, error) {
 	file, err := os.Open(f.Name)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	defer file.Close()
+	return file, nil
+}
 
-	hash := md5.New()
-
-	if _, err := io.Copy(hash, file); err != nil {
+func (f File) GetState() (string, error) {
+	r, err := f.openFile()
+	if err != nil {
 		return "", err
 	}
-
-	hashInBytes := hash.Sum(nil)[:16]
-	return hex.EncodeToString(hashInBytes), nil
-
+	return utils.Md5Checksum(r)
 }
-func (f File) Changed(state State, p *Pipeline) bool {
-	md5Sum, err := f.Checksum()
+
+func (f File) Changed(state stateStorage.State, p *Pipeline) bool {
+	md5Sum, err := f.GetState()
 	if err != nil {
 		return true
 	}

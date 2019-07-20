@@ -1,8 +1,10 @@
 package structs
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/emicklei/dot"
+	"github.com/tivvit/yap/pkg/stateStorage"
 	"github.com/yourbasic/graph"
 	"log"
 	"os"
@@ -38,20 +40,35 @@ type PipelineRaw struct {
 	Deps     []string               `yaml:"deps"`
 }
 
-func (p Pipeline) Run(state State) {
+func (p Pipeline) Run(state stateStorage.State, pl *Pipeline) {
 	for k, v := range p.Pipeline {
 		log.Printf("Running %s", k)
-		v.Run(state)
+		v.Run(state, pl)
 	}
 }
 
-func (pl Pipeline) Changed(state State, p *Pipeline) bool {
+func (pl Pipeline) Changed(state stateStorage.State, p *Pipeline) bool {
 	for _, b := range p.Pipeline {
 		if b.Changed(state, p) {
 			return true
 		}
 	}
 	return false
+}
+
+func (p Pipeline) GetState() (string, error) {
+	m := make(map[string]string)
+	for _, b := range p.Pipeline {
+		st, err := b.GetState()
+		if err == nil {
+			m[b.GetFullName()] = st
+		}
+	}
+	jb, err := json.Marshal(m)
+	if err != nil {
+		return "", err
+	}
+	return string(jb), nil
 }
 
 func (p *Pipeline) genDepFullRec(pb PipelineBlock) {
