@@ -150,6 +150,7 @@ func (p Pipeline) addFile(name string) *File {
 		p.MapFiles[name] = &File{
 			Name: name,
 		}
+		p.MapFiles[name].Analyze()
 		return p.MapFiles[name]
 	}
 }
@@ -163,18 +164,8 @@ func (p *Pipeline) files() {
 				f = p.addFile(o)
 				f.Deps = append(f.Deps, d.(*Block))
 			}
-			for _, i := range d.(*Block).DepsFull {
-				// not a block = it is a file
-				if _, ok := p.Map[i]; !ok {
-					f = p.addFile(i)
-				}
-			}
-		case *Pipeline:
-			for _, i := range d.(*Pipeline).DepsFull {
-				// not a block = it is a file
-				if _, ok := p.Map[i]; !ok {
-					f = p.addFile(i)
-				}
+			for _, i := range d.(*Block).In {
+				f = p.addFile(i)
 			}
 		}
 	}
@@ -310,12 +301,7 @@ func (p Pipeline) visualize(di *dot.Graph, main *dot.Graph, pipeline PipelineBlo
 				label := fmt.Sprintf(fmt.Sprintf(tableFmt, name, desc, cmd))
 				n := di.Node(k).Attr("shape", "plain")
 				n.Attr("label", dot.HTML(label))
-				nodesMap[v.(*Block).FullName] = n
-				for _, o := range v.(*Block).Out {
-					ob := main.Node(o)
-					nodesMap[o] = ob
-					deps = append(deps, [2]string{v.(*Block).FullName, o})
-				}
+				nodesMap[b.FullName] = n
 			case *Pipeline:
 				sg := di.Subgraph(k, dot.ClusterOption{})
 				node := sg.Node(strings.ToUpper(k)).Attr("shape", "parallelogram")
@@ -323,9 +309,10 @@ func (p Pipeline) visualize(di *dot.Graph, main *dot.Graph, pipeline PipelineBlo
 				nodes, d := p.visualize(sg, main, v)
 				for name, node := range nodes {
 					nodesMap[name] = node
-					log.Println(name)
+					//log.Println(name)
 					// detect outputs
 					att := node.AttributesMap
+					// todo file deps for pipelines are unsupported = delete this
 					if att.Value("shape") != nil {
 						deps = append(deps, [2]string{name, v.(*Pipeline).FullName})
 					}
@@ -343,19 +330,31 @@ func (p Pipeline) Visualize() {
 	di := dot.NewGraph(dot.Directed)
 	// todo file separation should be optional
 	nodeMap, deps := p.visualize(di, di, &p)
+	fileMap := make(map[string]dot.Node)
+	for _, f := range p.MapFiles {
+		if f.Analyzed && f.IsDir {
+			fileMap[f.Name] = di.Node(f.Name).Attr("shape", "septagon")
+		} else {
+			fileMap[f.Name] = di.Node(f.Name).Attr("shape", "oval")
+		}
+	}
 	for _, n := range p.Map {
 		switch n.(type) {
 		case *Block:
 			b := n.(*Block)
 			for _, t := range b.DepsFull {
-				if _, ok := nodeMap[t]; !ok {
-					// has to be missing file
-					nodeMap[t] = di.Node(t)
-				}
+				log.Println(t)
 				di.Edge(nodeMap[t], nodeMap[b.FullName])
+			}
+			for _, o := range b.Out {
+				di.Edge(nodeMap[b.FullName], fileMap[o])
+			}
+			for _, i := range b.In {
+				di.Edge(fileMap[i], nodeMap[b.FullName])
 			}
 		case *Pipeline:
 			b := n.(*Pipeline)
+			log.Println(b.DepsFull)
 			for _, t := range b.DepsFull {
 				di.Edge(nodeMap[t], nodeMap[b.FullName])
 			}

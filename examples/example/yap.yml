@@ -11,7 +11,6 @@ pipeline:
     include: test.yml
     deps:
       - main
-      - 1.txt
   test-again:
     include: test.yml
     deps:
@@ -25,8 +24,9 @@ pipeline:
     exec: echo "world"
     deps:
       - /main/a
+    in:
       - 1.txt
   dir-dep:
     exec: ls in
-    deps:
+    in:
       - in

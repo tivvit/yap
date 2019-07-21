@@ -43,6 +43,7 @@ func main() {
 	log.Println(string(b))
 	log.Println(js)
 	// todo support directory dependency
+	// todo check missing deps
 	p.Visualize()
 	p.Run(js, p)
 	// todo generate report

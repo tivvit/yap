@@ -5,20 +5,25 @@ import yaml
 VERSION = 1.0
 
 class Block(object):
-    def __init__(self, name: str, exe: str, check=None, desc=None, deps=None, out=None):
+    def __init__(self, name: str, exe: str, check=None, desc=None, deps=None, out=None, in_files=None):
         if deps is None:
             deps = []
         if out is None:
             out = []
+        if in_files is None:
+            in_files = []
         self.name = name
         self.desc = desc
         self.check = check
         self.exec = exe
         self.deps = deps
         self.out = out
+        self.in_files = in_files
 
     def items(self):
         r = copy.deepcopy(self.__dict__)
+        r["in"] = r["in_files"]
+        del r["in_files"]
         del r["name"]
         return r.items()
 

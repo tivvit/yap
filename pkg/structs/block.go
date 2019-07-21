@@ -16,6 +16,7 @@ type Block struct {
 	Description       string   `yaml:"desc,omitempty"`
 	Check             []string `yaml:"check,omitempty"`
 	Exec              []string `yaml:"exec,omitempty"`
+	In                []string `yaml:"in,omitempty"`
 	Out               []string `yaml:"out,omitempty"`
 }
 
@@ -57,6 +58,13 @@ func NewBlockFromMap(name string, m map[string]interface{}) *Block {
 		}
 		b.Deps = deps
 	}
+	if m["in"] != nil {
+		var in []string
+		for _, i := range m["in"].([]interface{}) {
+			in = append(in, i.(string))
+		}
+		b.In = in
+	}
 	if m["out"] != nil {
 		var out []string
 		for _, d := range m["out"].([]interface{}) {
@@ -73,12 +81,26 @@ func (b Block) Run(state stateStorage.State, p *Pipeline) {
 	}
 
 	initState := make(map[string]string)
+
+	for _, f := range b.In {
+		var st string
+		var err error
+		if v, ok := p.MapFiles[f]; ok {
+			st, err = v.GetState()
+		} else {
+			log.Println(f, "NOT FOUND")
+			continue
+		}
+		if err != nil {
+			log.Println(err)
+			st = ""
+		}
+		initState[f] = st
+	}
 	for _, d := range b.DepsFull {
 		var st string
 		var err error
 		if v, ok := p.Map[d]; ok {
-			st, err = v.GetState()
-		} else if v, ok := p.MapFiles[d]; ok {
 			st, err = v.GetState()
 		} else {
 			log.Println(d, "NOT FOUND")
@@ -114,7 +136,7 @@ func (b Block) Run(state stateStorage.State, p *Pipeline) {
 		return
 	}
 
-	state.Set(utils.DepsPrefix + b.FullName, string(js))
+	state.Set(utils.DepsPrefix+b.FullName, string(js))
 }
 
 func (b Block) GetState() (string, error) {
@@ -133,7 +155,7 @@ func (b Block) GetState() (string, error) {
 }
 
 func (b Block) Changed(state stateStorage.State, p *Pipeline) bool {
-	// todo review
+	// todo review - should be based on deps state
 	newState, err := b.GetState()
 	if err != nil {
 		return true
