@@ -257,9 +257,14 @@ func (p Pipeline) Plan(name string) []PipelineBlock {
 		}
 
 	}
+	// todo extract only parents - from bfs of inverted graph
 	log.Println("Acyclic", graph.Acyclic(g))
 	log.Println(g.String())
-	ts, _ := graph.TopSort(g)
+	ts, ok := graph.TopSort(g)
+	if !ok {
+		log.Println("Graph contains cycle")
+		return nil
+	}
 	log.Println(ts)
 	var r []PipelineBlock
 	if name != "" {
