@@ -49,10 +49,13 @@ func main() {
 	log.Println(js)
 	// todo support directory dependency
 	// todo check missing deps
-	p.Visualize()
-	for _, s := range pl {
-		s.Run(js, p)
-	}
+	//p.Vis("/finalize")
+	p.Vis("")
+
+	//for _, s := range pl {
+	//	s.Run(js, p)
+	//}
+
 	// todo generate report
 	// todo generate state
 	// todo generate

@@ -12,6 +12,12 @@ import (
 	"strings"
 )
 
+const (
+	mainNamespace = ""
+	mainName      = ""
+	mainFullName  = mainNamespace + "/" + mainName
+)
+
 type Pipeline struct {
 	*PipelineBlockBase `yaml:",inline"`
 	Version            float32                  `yaml:"version"`
@@ -111,6 +117,7 @@ func (p Pipeline) names(namespace string, pb PipelineBlock) {
 			}
 		}
 	}
+	p.FullName = getFullName(mainName, namespace)
 }
 
 func (p Pipeline) parents(pb PipelineBlock) {
@@ -133,11 +140,14 @@ func (p Pipeline) flatten(pb PipelineBlock) map[string]PipelineBlock {
 	switch pb.(type) {
 	case *Pipeline:
 		for _, v := range pb.(*Pipeline).Pipeline {
+			lm := map[string]PipelineBlock{}
 			switch v.(type) {
 			case *Pipeline:
 				for n, b := range p.flatten(v.(*Pipeline)) {
 					r[n] = b
+					lm[n] = b
 				}
+				v.(*Pipeline).Map = lm
 				r[v.(*Pipeline).FullName] = v.(*Pipeline)
 			case *Block:
 				r[v.(*Block).FullName] = v.(*Block)
@@ -176,7 +186,7 @@ func (p *Pipeline) files() {
 }
 
 func (p *Pipeline) Enrich() {
-	p.names("", p)
+	p.names(mainNamespace, p)
 	p.parents(p)
 	p.Map = p.flatten(p)
 	p.genDepFullRec(p)
@@ -281,11 +291,21 @@ func filterDeps(stageMap map[string]Graphable, name string) map[string]Graphable
 	return r
 }
 
-func (p Pipeline) Plan(name string) []PipelineBlock {
-	stageMap := p.GetGraphable()
-	if name != "" {
-		stageMap = filterDeps(stageMap, name)
+func filterMain(sm map[string]Graphable) map[string]Graphable {
+	fsm := map[string]Graphable{}
+	for k, s := range sm {
+		switch s.(type) {
+		case PipelineBlock:
+			if s.(PipelineBlock).GetParent().GetFullName() == mainFullName {
+				fsm[k] = s
+			}
+		}
 	}
+	return fsm
+}
+
+func (p Pipeline) Plan(name string) []PipelineBlock {
+	stageMap := filter(name, p.GetGraphable())
 	g, _, mi := CreateGraph(stageMap)
 	if !graph.Acyclic(g) {
 		log.Println("There is a cycle in the dependencies")
@@ -303,94 +323,166 @@ func (p Pipeline) Plan(name string) []PipelineBlock {
 	return r
 }
 
-func (p Pipeline) visualize(di *dot.Graph, main *dot.Graph, pipeline PipelineBlock) (map[string]dot.Node, [][2]string) {
-	nodesMap := map[string]dot.Node{}
-	var deps [][2]string
-	switch pipeline.(type) {
-	case *Pipeline:
-		for k, v := range pipeline.(*Pipeline).Pipeline {
-			switch v.(type) {
-			case *Block:
-				b := v.(*Block)
-				nameFmt := "<tr><td><b>%s</b></td></tr>"
-				name := fmt.Sprintf(nameFmt, k)
-				cmdFmt := `<tr><td><font face="Courier New, Courier, monospace">%s</font></td></tr>`
-				cmd := fmt.Sprintf(cmdFmt, strings.Join(b.Exec, " "))
-				descFmt := "<tr><td>%s</td></tr>"
-				desc := ""
-				if b.Description != "" {
-					desc = fmt.Sprintf(descFmt, b.Description)
-				}
-				tableFmt := `<table border="0" cellborder="1" cellspacing="0">%s%s%s</table>`
-				label := fmt.Sprintf(fmt.Sprintf(tableFmt, name, desc, cmd))
-				n := di.Node(k).Attr("shape", "plain")
-				n.Attr("label", dot.HTML(label))
-				nodesMap[b.FullName] = n
-			case *Pipeline:
-				sg := di.Subgraph(k, dot.ClusterOption{})
-				node := sg.Node(strings.ToUpper(k)).Attr("shape", "parallelogram")
-				nodesMap[v.(*Pipeline).FullName] = node
-				nodes, d := p.visualize(sg, main, v)
-				for name, node := range nodes {
-					nodesMap[name] = node
-					//log.Println(name)
-					// detect outputs
-					att := node.AttributesMap
-					// todo file deps for pipelines are unsupported = delete this
-					if att.Value("shape") != nil {
-						deps = append(deps, [2]string{name, v.(*Pipeline).FullName})
-					}
-				}
-				for _, i := range d {
-					deps = append(deps, i)
-				}
-			}
-		}
+func filter(name string, stageMap map[string]Graphable) map[string]Graphable {
+	if name != "" {
+		stageMap = filterDeps(stageMap, name)
+	} else {
+		stageMap = filterMain(stageMap)
 	}
-	return nodesMap, deps
+	return stageMap
 }
 
-func (p Pipeline) Visualize() {
-	di := dot.NewGraph(dot.Directed)
-	// todo file separation should be optional
-	nodeMap, deps := p.visualize(di, di, &p)
-	fileMap := make(map[string]dot.Node)
-	for _, f := range p.MapFiles {
-		if f.Analyzed && f.IsDir {
-			fileMap[f.Name] = di.Node(f.Name).Attr("shape", "septagon")
-		} else {
-			fileMap[f.Name] = di.Node(f.Name).Attr("shape", "oval")
-		}
-	}
-	for _, n := range p.Map {
-		switch n.(type) {
-		case *Block:
-			b := n.(*Block)
-			for _, t := range b.DepsFull {
-				log.Println(t)
-				di.Edge(nodeMap[t], nodeMap[b.FullName])
-			}
-			for _, o := range b.Out {
-				di.Edge(nodeMap[b.FullName], fileMap[o])
-			}
-			for _, i := range b.In {
-				di.Edge(fileMap[i], nodeMap[b.FullName])
-			}
-		case *Pipeline:
-			b := n.(*Pipeline)
-			log.Println(b.DepsFull)
-			for _, t := range b.DepsFull {
-				di.Edge(nodeMap[t], nodeMap[b.FullName])
-			}
-		}
+//func (p Pipeline) visualize(di *dot.Graph, main *dot.Graph, pipeline PipelineBlock) (map[string]dot.Node, [][2]string) {
+//	nodesMap := map[string]dot.Node{}
+//	var deps [][2]string
+//	switch pipeline.(type) {
+//	case *Pipeline:
+//		for k, v := range pipeline.(*Pipeline).Pipeline {
+//			switch v.(type) {
+//			case *Block:
+//				b := v.(*Block)
+//				nameFmt := "<tr><td><b>%s</b></td></tr>"
+//				name := fmt.Sprintf(nameFmt, k)
+//				cmdFmt := `<tr><td><font face="Courier New, Courier, monospace">%s</font></td></tr>`
+//				cmd := fmt.Sprintf(cmdFmt, strings.Join(b.Exec, " "))
+//				descFmt := "<tr><td>%s</td></tr>"
+//				desc := ""
+//				if b.Description != "" {
+//					desc = fmt.Sprintf(descFmt, b.Description)
+//				}
+//				tableFmt := `<table border="0" cellborder="1" cellspacing="0">%s%s%s</table>`
+//				label := fmt.Sprintf(fmt.Sprintf(tableFmt, name, desc, cmd))
+//				n := di.Node(k).Attr("shape", "plain")
+//				n.Attr("label", dot.HTML(label))
+//				nodesMap[b.FullName] = n
+//			case *Pipeline:
+//				sg := di.Subgraph(k, dot.ClusterOption{})
+//				node := sg.Node(strings.ToUpper(k)).Attr("shape", "parallelogram")
+//				nodesMap[v.(*Pipeline).FullName] = node
+//				nodes, d := p.visualize(sg, main, v)
+//				for name, node := range nodes {
+//					nodesMap[name] = node
+//					//log.Println(name)
+//					// detect outputs
+//					att := node.AttributesMap
+//					// todo file deps for pipelines are unsupported = delete this
+//					if att.Value("shape") != nil {
+//						deps = append(deps, [2]string{name, v.(*Pipeline).FullName})
+//					}
+//				}
+//				for _, i := range d {
+//					deps = append(deps, i)
+//				}
+//			}
+//		}
+//	}
+//	return nodesMap, deps
+//}
 
+func (p Pipeline) Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[string]dot.Node) {
+	splitName := strings.Split(p.FullName, "/")
+	name := splitName[len(splitName)-1]
+	log.Println("name is", name, "for", p.FullName)
+	if name != "" {
+		innerCtx := ctx.Subgraph(name, dot.ClusterOption{})
+
+		// virtual block node
+		node := innerCtx.Node(strings.ToUpper(name)).Attr("shape", "parallelogram")
+		(*m)[p.FullName] = node
+
+		//nodes, d := p.visualize(sg, main, v)
+		//for name, node := range nodes {
+		//	(*m)[name] = node
+		//}
+		for _, v := range p.Pipeline {
+			v.Visualize(innerCtx, fileMap, m)
+		}
+	} else {
+		for _, v := range p.Pipeline {
+			v.Visualize(ctx, fileMap, m)
+		}
 	}
-	for _, d := range deps {
-		di.Edge(nodeMap[d[0]], nodeMap[d[1]])
+}
+
+func (p Pipeline) Vis(name string) {
+	sm := filter(name, p.GetGraphable())
+	di := dot.NewGraph(dot.Directed)
+	nodeMap := map[string]dot.Node{}
+	fileMap := map[string]*File{}
+	for _, v := range sm {
+		switch v.(type) {
+		case Visualizable:
+			v.(Visualizable).Visualize(di, &fileMap, &nodeMap)
+		default:
+			log.Println("Unexpected type %T which is not Visualizable", v)
+		}
+	}
+	for n := range fileMap {
+		fileMap[n] = p.MapFiles[n]
+		fileMap[n].Visualize(di, &fileMap, &nodeMap)
+	}
+	for k, n := range p.Map {
+		if _, ok := nodeMap[k]; !ok {
+			continue
+		}
+		switch n.(type) {
+		case PipelineBlock:
+			for _, d := range n.(PipelineBlock).GetDepsFull() {
+				di.Edge(nodeMap[d], nodeMap[n.GetFullName()])
+			}
+		}
+		switch n.(type) {
+		case *Pipeline:
+			for _, d := range n.(*Pipeline).Pipeline {
+				di.Edge(nodeMap[d.GetFullName()], nodeMap[n.GetFullName()])
+			}
+		}
 	}
 	f, _ := os.Create("graph.dot")
 	di.Write(f)
 	p.tryDot()
+	return
+
+	//// todo file separation should be optional
+	//nodeMap, deps := p.visualize(di, di, &p)
+	//fileMap := make(map[string]dot.Node)
+	//for _, f := range p.MapFiles {
+	//	f.Visualize(di, &fileMap)
+	//	//if f.Analyzed && f.IsDir {
+	//	//	fileMap[f.Name] = di.Node(f.Name).Attr("shape", "septagon")
+	//	//} else {
+	//	//	fileMap[f.Name] = di.Node(f.Name).Attr("shape", "oval")
+	//	//}
+	//}
+	//for _, n := range p.Map {
+	//	switch n.(type) {
+	//	case *Block:
+	//		b := n.(*Block)
+	//		for _, t := range b.DepsFull {
+	//			log.Println(t)
+	//			di.Edge(nodeMap[t], nodeMap[b.FullName])
+	//		}
+	//		for _, o := range b.Out {
+	//			di.Edge(nodeMap[b.FullName], fileMap[o])
+	//		}
+	//		for _, i := range b.In {
+	//			di.Edge(fileMap[i], nodeMap[b.FullName])
+	//		}
+	//	case *Pipeline:
+	//		b := n.(*Pipeline)
+	//		log.Println(b.DepsFull)
+	//		for _, t := range b.DepsFull {
+	//			di.Edge(nodeMap[t], nodeMap[b.FullName])
+	//		}
+	//	}
+	//
+	//}
+	//for _, d := range deps {
+	//	di.Edge(nodeMap[d[0]], nodeMap[d[1]])
+	//}
+	//f, _ := os.Create("graph.dot")
+	//di.Write(f)
+	//p.tryDot()
 }
 
 func (p Pipeline) tryDot() {

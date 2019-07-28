@@ -3,6 +3,8 @@ package structs
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"github.com/emicklei/dot"
 	"github.com/mattn/go-shellwords"
 	"github.com/tivvit/yap/pkg/stateStorage"
 	"github.com/tivvit/yap/pkg/utils"
@@ -177,4 +179,26 @@ func (b Block) Changed(state stateStorage.State, p *Pipeline) bool {
 
 func (b Block) GetDepsFull() []string {
 	return append(b.DepsFull, b.In...)
+}
+
+func (b Block) Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[string]dot.Node) {
+	nameFmt := "<tr><td><b>%s</b></td></tr>"
+	name := fmt.Sprintf(nameFmt, b.Name)
+	cmdFmt := `<tr><td><font face="Courier New, Courier, monospace">%s</font></td></tr>`
+	cmd := fmt.Sprintf(cmdFmt, strings.Join(b.Exec, " "))
+	descFmt := "<tr><td>%s</td></tr>"
+	desc := ""
+	if b.Description != "" {
+		desc = fmt.Sprintf(descFmt, b.Description)
+	}
+	tableFmt := `<table border="0" cellborder="1" cellspacing="0">%s%s%s</table>`
+	label := fmt.Sprintf(fmt.Sprintf(tableFmt, name, desc, cmd))
+	n := ctx.Node(b.Name).Attr("shape", "plain")
+	n.Attr("label", dot.HTML(label))
+	(*m)[b.FullName] = n
+
+	for _, f := range b.In {
+		(*fileMap)[f] = nil
+	}
+
 }

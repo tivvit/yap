@@ -1,11 +1,17 @@
 package structs
 
 import (
+	"github.com/emicklei/dot"
 	"github.com/tivvit/yap/pkg/stateStorage"
 	"github.com/tivvit/yap/pkg/utils"
 	"log"
 	"os"
 	"time"
+)
+
+const (
+	dirShape  = "septagon"
+	fileShape = "oval"
 )
 
 type File struct {
@@ -64,7 +70,7 @@ func (f File) GetDepsFull() []string {
 	var r []string
 	for _, d := range f.Deps {
 		r = append(r, d.FullName)
- 	}
+	}
 	return r
 }
 
@@ -72,3 +78,10 @@ func (f File) GetFullName() string {
 	return f.Name
 }
 
+func (f File) Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[string]dot.Node) {
+	if f.Analyzed && f.IsDir {
+		(*m)[f.Name] = ctx.Node(f.Name).Attr("shape", dirShape)
+	} else {
+		(*m)[f.Name] = ctx.Node(f.Name).Attr("shape", fileShape)
+	}
+}

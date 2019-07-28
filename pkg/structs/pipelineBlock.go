@@ -1,14 +1,18 @@
 package structs
 
 import (
+	"github.com/emicklei/dot"
 	"github.com/tivvit/yap/pkg/stateStorage"
+	"log"
 	"strings"
 )
 
 type PipelineBlock interface {
-	Run(state stateStorage.State, p *Pipeline)
 	Checkable
 	Graphable
+	Visualizable
+	Run(state stateStorage.State, p *Pipeline)
+	GetParent() *Pipeline
 }
 
 type Checkable interface {
@@ -19,6 +23,10 @@ type Checkable interface {
 type Graphable interface {
 	GetDepsFull() []string
 	GetFullName() string
+}
+
+type Visualizable interface {
+	Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[string]dot.Node)
 }
 
 type PipelineBlockBase struct {
@@ -34,10 +42,14 @@ func (p *PipelineBlockBase) genDepFull() {
 	}
 	for _, d := range p.Deps {
 		if strings.HasPrefix(d, "/") {
+			// absolute dependency
 			p.DepsFull = append(p.DepsFull, d)
 		} else {
+			// local (relative) dependency
 			if db, ok := p.Parent.Pipeline[d]; ok {
 				p.DepsFull = append(p.DepsFull, db.GetFullName())
+			} else {
+				log.Printf("Invalid dependency %s for %s\n", d, p.FullName)
 			}
 			//else {
 			//	log.Println("non-module dependency", d)
@@ -50,4 +62,8 @@ func (p *PipelineBlockBase) genDepFull() {
 
 func (p PipelineBlockBase) GetFullName() string {
 	return p.FullName
+}
+
+func (p PipelineBlockBase) GetParent() *Pipeline {
+	return p.Parent
 }

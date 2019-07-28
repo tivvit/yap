@@ -15,6 +15,8 @@ pipeline:
     include: test.yml
     deps:
       - main
+  double:
+    include: double.yml
   finalize:
     exec: echo "hello"
     desc: This is the final step
