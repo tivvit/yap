@@ -174,3 +174,7 @@ func (b Block) Changed(state stateStorage.State, p *Pipeline) bool {
 	}
 	return true
 }
+
+func (b Block) GetDepsFull() []string {
+	return append(b.DepsFull, b.In...)
+}

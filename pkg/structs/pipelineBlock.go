@@ -8,12 +8,17 @@ import (
 type PipelineBlock interface {
 	Run(state stateStorage.State, p *Pipeline)
 	Checkable
-	GetFullName() string
+	Graphable
 }
 
 type Checkable interface {
 	Changed(state stateStorage.State, p *Pipeline) bool
 	GetState() (string, error)
+}
+
+type Graphable interface {
+	GetDepsFull() []string
+	GetFullName() string
 }
 
 type PipelineBlockBase struct {

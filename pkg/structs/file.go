@@ -59,3 +59,16 @@ func (f *File) Analyze() {
 	f.ModTime = fileInfo.ModTime()
 	f.IsDir = fileInfo.IsDir()
 }
+
+func (f File) GetDepsFull() []string {
+	var r []string
+	for _, d := range f.Deps {
+		r = append(r, d.FullName)
+ 	}
+	return r
+}
+
+func (f File) GetFullName() string {
+	return f.Name
+}
+

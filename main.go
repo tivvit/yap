@@ -34,7 +34,11 @@ func main() {
 	log.Println("parent", p.Parent)
 	log.Println(p.Pipeline["test"].(*structs.Pipeline).DepsFull)
 	log.Println(p.Pipeline["finalize"].(*structs.Block).DepsFull)
-	pl := p.Plan("finalize")
+	pl := p.Plan("/finalize")
+	p.Plan("/main/B")
+	p.Plan("/main/a")
+	p.Plan("/main/A")
+	p.Plan("files.txt")
 	//pl := p.Plan("")
 	b, err = yaml.Marshal(pl)
 	if err != nil {
