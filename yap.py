@@ -4,6 +4,7 @@ import yaml
 
 VERSION = 1.0
 
+
 class Block(object):
     def __init__(self, name: str, exe: str, check=None, desc=None, deps=None, out=None, in_files=None):
         if deps is None:

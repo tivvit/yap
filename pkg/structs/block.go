@@ -200,5 +200,8 @@ func (b Block) Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[strin
 	for _, f := range b.In {
 		(*fileMap)[f] = nil
 	}
+	for _, f := range b.Out {
+		(*fileMap)[f] = nil
+	}
 
 }

@@ -1,0 +1,9 @@
+version: 1.0
+settings:
+  state:
+    type: json
+    file: state.json
+pipeline:
+  main:
+    type: script
+    include: pipeline.py

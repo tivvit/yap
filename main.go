@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/tivvit/yap/pkg"
 	"github.com/tivvit/yap/pkg/stateStorage"
-	"github.com/tivvit/yap/pkg/structs"
 	"gopkg.in/yaml.v3"
 	"log"
 )
@@ -31,21 +30,21 @@ func main() {
 			log.Println(d.FullName)
 		}
 	}
-	log.Println("parent", p.Parent)
-	log.Println(p.Pipeline["test"].(*structs.Pipeline).DepsFull)
-	log.Println(p.Pipeline["finalize"].(*structs.Block).DepsFull)
-	pl := p.Plan("/finalize")
-	log.Println(pl)
-	log.Println(p.Plan("/main/B"))
-	log.Println(p.Plan("/main/a"))
-	log.Println(p.Plan("/main/A"))
-	log.Println(p.Plan("files.txt"))
-	log.Println(p.Plan(""))
-	b, err = yaml.Marshal(pl)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	log.Println(string(b))
+	//log.Println("parent", p.Parent)
+	//log.Println(p.Pipeline["test"].(*structs.Pipeline).DepsFull)
+	//log.Println(p.Pipeline["finalize"].(*structs.Block).DepsFull)
+	//pl := p.Plan("/finalize")
+	//log.Println(pl)
+	//log.Println(p.Plan("/main/B"))
+	//log.Println(p.Plan("/main/a"))
+	//log.Println(p.Plan("/main/A"))
+	//log.Println(p.Plan("files.txt"))
+	//log.Println(p.Plan(""))
+	//b, err = yaml.Marshal(pl)
+	//if err != nil {
+	//	log.Fatalln(err)
+	//}
+	//log.Println(string(b))
 	log.Println(js)
 	// todo support directory dependency
 	// todo check missing deps

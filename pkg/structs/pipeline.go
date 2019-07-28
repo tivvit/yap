@@ -433,11 +433,18 @@ func (p Pipeline) Vis(name string) {
 			}
 		}
 		switch n.(type) {
-		case *Pipeline:
-			for _, d := range n.(*Pipeline).Pipeline {
-				di.Edge(nodeMap[d.GetFullName()], nodeMap[n.GetFullName()])
+		case *Block:
+			for _, d := range n.(*Block).Out {
+				di.Edge(nodeMap[n.GetFullName()], nodeMap[d])
 			}
 		}
+		// todo connect to parent block
+		//switch n.(type) {
+		//case *Pipeline:
+		//	for _, d := range n.(*Pipeline).Pipeline {
+		//		di.Edge(nodeMap[d.GetFullName()], nodeMap[n.GetFullName()])
+		//	}
+		//}
 	}
 
 	legend := di.Subgraph("Legend", dot.ClusterOption{})
