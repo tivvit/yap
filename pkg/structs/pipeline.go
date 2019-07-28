@@ -16,6 +16,7 @@ const (
 	mainNamespace = ""
 	mainName      = ""
 	mainFullName  = mainNamespace + "/" + mainName
+	pipelineShape = "parallelogram"
 )
 
 type Pipeline struct {
@@ -387,7 +388,7 @@ func (p Pipeline) Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[st
 		innerCtx := ctx.Subgraph(name, dot.ClusterOption{})
 
 		// virtual block node
-		node := innerCtx.Node(strings.ToUpper(name)).Attr("shape", "parallelogram")
+		node := innerCtx.Node(strings.ToUpper(name)).Attr("shape", pipelineShape)
 		(*m)[p.FullName] = node
 
 		//nodes, d := p.visualize(sg, main, v)
@@ -438,6 +439,20 @@ func (p Pipeline) Vis(name string) {
 			}
 		}
 	}
+
+	legend := di.Subgraph("Legend", dot.ClusterOption{})
+	legend.Node("File").Attr("shape", fileShape)
+	legend.Node("Directory").Attr("shape", dirShape)
+	pipeline := legend.Subgraph("Pipeline", dot.ClusterOption{})
+	pipeline.Node("Pipeline").Attr("shape", pipelineShape)
+	b := Block{
+		Name: "Block",
+		Description: "This is a Block",
+		Exec: []string{"code", "-h"},
+	}
+	legendMap := map[string]dot.Node{}
+	b.Visualize(legend, nil, &legendMap)
+
 	f, _ := os.Create("graph.dot")
 	di.Write(f)
 	p.tryDot()
