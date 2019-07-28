@@ -235,20 +235,22 @@ func (p Pipeline) GetGraphable() map[string]Graphable {
 	return m
 }
 
-func CreateInverseGraph(stages map[string]Graphable) (*graph.Mutable, map[string]int) {
+func CreateInverseGraph(stages map[string]Graphable) (*graph.Mutable, map[string]int, map[int]string) {
 	return createGraph(stages, true)
 }
 
-func CreateGraph(stages map[string]Graphable) (*graph.Mutable, map[string]int) {
+func CreateGraph(stages map[string]Graphable) (*graph.Mutable, map[string]int, map[int]string) {
 	return createGraph(stages, false)
 }
 
-func createGraph(stages map[string]Graphable, inverse bool) (*graph.Mutable, map[string]int) {
+func createGraph(stages map[string]Graphable, inverse bool) (*graph.Mutable, map[string]int, map[int]string) {
 	g := graph.New(len(stages))
 	m := make(map[string]int)
+	mi := make(map[int]string)
 	i := 0
 	for k := range stages {
 		m[k] = i
+		mi[i] = k
 		i++
 	}
 	for n, s := range stages {
@@ -260,91 +262,45 @@ func createGraph(stages map[string]Graphable, inverse bool) (*graph.Mutable, map
 			}
 		}
 	}
-	return g, m
+	return g, m, mi
+}
+
+func filterDeps(stageMap map[string]Graphable, name string) map[string]Graphable {
+	_, found := stageMap[name]
+	if !found {
+		log.Printf("Target %s not found \n", name)
+		return map[string]Graphable{}
+	}
+	g, m, mi := CreateInverseGraph(stageMap)
+	r := make(map[string]Graphable)
+	graph.BFS(g, m[name], func(f, t int, _ int64) {
+		log.Printf("%s -> %s (%d -> %d)", mi[f], mi[t], f, t)
+		r[mi[f]] = stageMap[mi[f]]
+		r[mi[t]] = stageMap[mi[t]]
+	})
+	return r
 }
 
 func (p Pipeline) Plan(name string) []PipelineBlock {
 	stageMap := p.GetGraphable()
-	g, m := CreateInverseGraph(stageMap)
-	mi := make(map[int]string)
-	for k, v := range m {
-		mi[v] = k
+	if name != "" {
+		stageMap = filterDeps(stageMap, name)
 	}
-	target, found := m[name]
-	if !found {
-		log.Printf("Target %s not found \n", name)
+	g, _, mi := CreateGraph(stageMap)
+	if !graph.Acyclic(g) {
+		log.Println("There is a cycle in the dependencies")
 		return []PipelineBlock{}
 	}
-	graph.BFS(g, target, func(f, t int, _ int64) {
-		log.Printf("%s -> %s (%d -> %d)", mi[f], mi[t], f, t)
-	})
-	log.Println("---")
-	return []PipelineBlock{}
-
-	//nodeMap := make(map[int]string)
-	//nodeMapInv := make(map[string]int)
-	//c := 0
-	//for k := range stageMap {
-	//	nodeMap[c] = k
-	//	nodeMapInv[k] = c
-	//	c++
-	//}
-	//log.Println(stageMap)
-	//log.Println(p.GetGraphable())
-	//log.Println(nodeMap)
-	//log.Println(nodeMapInv)
-	//g := graph.New(len(stageMap))
-	//gi := graph.New(len(stageMap))
-	//for k, v := range stageMap {
-	//	switch v.(type) {
-	//	case *Pipeline:
-	//		for _, d := range v.(*Pipeline).Deps {
-	//			if id, ok := nodeMapInv[d]; ok {
-	//				g.Add(id, nodeMapInv[k])
-	//				gi.Add(nodeMapInv[k], id)
-	//				log.Println("adding edge", d, "->", k, id, "->", nodeMapInv[k])
-	//			} else {
-	//				log.Println(d, "is not a target")
-	//			}
-	//		}
-	//	case *Block:
-	//		for _, d := range v.(*Block).Deps {
-	//			if id, ok := nodeMapInv[d]; ok {
-	//				g.Add(id, nodeMapInv[k])
-	//				gi.Add(nodeMapInv[k], id)
-	//				log.Println("adding edge", d, "->", k, id, "->", nodeMapInv[k])
-	//			} else {
-	//				log.Println(d, "is not a target")
-	//			}
-	//		}
-	//	}
-	//
-	//}
-	//// todo extract only parents - from bfs of inverted graph
-	//log.Println("Acyclic", graph.Acyclic(g))
-	//log.Println(g.String())
-	//ts, ok := graph.TopSort(g)
-	//if !ok {
-	//	log.Println("Graph contains cycle")
-	//	return nil
-	//}
-	//log.Println(ts)
-	//var r []PipelineBlock
-	//if name != "" {
-	//	r = append(r, stageMap[name])
-	//	graph.BFS(gi, nodeMapInv[name], func(f, t int, _ int64) {
-	//		//log.Println(f, "to", t)
-	//		r = append(r, stageMap[nodeMap[t]])
-	//	})
-	//	for left, right := 0, len(r)-1; left < right; left, right = left+1, right-1 {
-	//		r[left], r[right] = r[right], r[left]
-	//	}
-	//} else {
-	//	for _, i := range ts {
-	//		r = append(r, stageMap[nodeMap[i]])
-	//	}
-	//}
-	//return r
+	ts, _ := graph.TopSort(g)
+	var r []PipelineBlock
+	for _, v := range ts {
+		e := stageMap[mi[v]]
+		switch e.(type) {
+		case PipelineBlock:
+			r = append(r, e.(PipelineBlock))
+		}
+	}
+	return r
 }
 
 func (p Pipeline) visualize(di *dot.Graph, main *dot.Graph, pipeline PipelineBlock) (map[string]dot.Node, [][2]string) {
