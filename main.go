@@ -50,7 +50,9 @@ func main() {
 	// todo support directory dependency
 	// todo check missing deps
 	p.Visualize()
-	p.Run(js, p)
+	for _, s := range pl {
+		s.Run(js, p)
+	}
 	// todo generate report
 	// todo generate state
 	// todo generate
