@@ -11,10 +11,15 @@ import (
 
 var yapCmd = &cobra.Command{
 	Use:   "yap",
-	Short: "",
+	Short: "Yet Another Pipeline",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		log.Println("RUN")
+		err := cmd.Help()
+		if err != nil {
+			log.Fatalln(err)
+		}
+		os.Exit(0)
+
 		//for _, s := range pl {
 		//	s.Run(js, p)
 		//}
@@ -28,7 +33,7 @@ var yapCmd = &cobra.Command{
 func init() {
 	yapCmd.AddCommand(runCmd)
 	yapCmd.AddCommand(visualizeCmd)
-	//visualizeCmd.Flags().StringP("source", "s", "", "Source directory to read from")
+	visualizeCmd.Flags().StringP("out", "o", "graph.dot", "Output graph filename")
 }
 
 func Execute() {

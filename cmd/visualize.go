@@ -13,7 +13,9 @@ var visualizeCmd = &cobra.Command{
 	Short: "visualize",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		js := stateStorage.NewJsonStorage()
+		o, err := cmd.Flags().GetString("out")
+		log.Println("OUTPUT FILE", o)
+
 		p := pkg.Load()
 		b, err := yaml.Marshal(p)
 		if err != nil {
@@ -32,6 +34,7 @@ var visualizeCmd = &cobra.Command{
 				log.Println(d.FullName)
 			}
 		}
+		js := stateStorage.NewJsonStorage()
 		//log.Println("parent", p.Parent)
 		//log.Println(p.Pipeline["test"].(*structs.Pipeline).DepsFull)
 		//log.Println(p.Pipeline["finalize"].(*structs.Block).DepsFull)
@@ -51,6 +54,7 @@ var visualizeCmd = &cobra.Command{
 		// todo support directory dependency
 		// todo check missing deps
 		//p.Vis("/finalize")
+
 		if len(args) == 0 {
 			p.Vis("")
 		} else if len(args) == 1 {
