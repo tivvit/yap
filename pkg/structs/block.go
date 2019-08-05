@@ -181,7 +181,7 @@ func (b Block) GetDepsFull() []string {
 	return append(b.DepsFull, b.In...)
 }
 
-func (b Block) Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[string]dot.Node) {
+func (b Block) Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[string]dot.Node , conf VisualizeConf) {
 	nameFmt := "<tr><td><b>%s</b></td></tr>"
 	name := fmt.Sprintf(nameFmt, b.Name)
 	cmdFmt := `<tr><td><font face="Courier New, Courier, monospace">%s</font></td></tr>`

@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	dirShape  = "septagon"
-	fileShape = "oval"
+	DirShape  = "septagon"
+	FileShape = "oval"
 )
 
 type File struct {
@@ -78,10 +78,10 @@ func (f File) GetFullName() string {
 	return f.Name
 }
 
-func (f File) Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[string]dot.Node) {
+func (f File) Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[string]dot.Node, conf VisualizeConf) {
 	if f.Analyzed && f.IsDir {
-		(*m)[f.Name] = ctx.Node(f.Name).Attr("shape", dirShape)
+		(*m)[f.Name] = ctx.Node(f.Name).Attr("shape", DirShape)
 	} else {
-		(*m)[f.Name] = ctx.Node(f.Name).Attr("shape", fileShape)
+		(*m)[f.Name] = ctx.Node(f.Name).Attr("shape", FileShape)
 	}
 }

@@ -63,6 +63,8 @@ fulltextPremisesMapping_json = os.path.join(REV_DATA,
 fulltextPremisesReversedMapping_json = os.path.join(REV_DATA,
                                                     "/fulltextPremisesReversedMapping.json")
 
+gen_prefix = "gen_"
+
 # USER FACING TARGETS
 
 p = yap.Pipeline(settings={
@@ -87,24 +89,24 @@ p.add(yap.Block("list-imports",
 # p.add(yap.Block("make2graph", "true", deps=["make2graph.svg"]))
 
 # ACTUAL TARGETS
-p.add(yap.Block("/tmp/nametag-target-mapping-curated-domain-lists",
+p.add(yap.Block(gen_prefix + "/tmp/nametag-target-mapping-curated-domain-lists",
                 "cd /tmp && git clone "
                 "git@gitlab.seznam.net:simon.let/nametag-target-mapping-curated-domain-lists.git",
                 out=["/tmp/nametag-target-mapping-curated-domain-lists"]))
-p.add(yap.Block(crossHostingBlacklist_txt.replace('/', '_'),
+p.add(yap.Block(gen_prefix + crossHostingBlacklist_txt.replace('/', '_'),
                 "true",
                 out=[fulltextPremises_json],
                 in_files=["/tmp/nametag-target-mapping-curated-domain-lists"]))
-p.add(yap.Block(scannerBypassWhitelist_txt,
+p.add(yap.Block(gen_prefix + scannerBypassWhitelist_txt,
                 "true",
                 out=[scannerBypassWhitelist_txt.replace('/', '_')],
                 in_files=["/tmp/nametag-target-mapping-curated-domain-lists"]))
-p.add(yap.Block(blacklist_txt,
+p.add(yap.Block(gen_prefix + blacklist_txt,
                 "cat {} > {}".format(crossHostingBlacklist_txt, blacklist_txt),
                 in_files=[crossHostingBlacklist_txt],
                 out=[blacklist_txt]
                 ))
-p.add(yap.Block(importantDomains_txt,
+p.add(yap.Block(gen_prefix + importantDomains_txt,
                 "python3 getImportantDomains.py --input-file {} > {}".format(
                     domainWeights_json, importantDomains_txt) +
                 "cat {} >> {}".format(scannerBypassWhitelist_txt,
@@ -113,20 +115,20 @@ p.add(yap.Block(importantDomains_txt,
                           domainWeights_json,
                           scannerBypassWhitelist_txt],
                 out=[importantDomains_txt]))
-p.add(yap.Block(transactionalDomains_txt,
+p.add(yap.Block(gen_prefix + transactionalDomains_txt,
                 "python2 getTransactionalDomains.py2 --input-directory {} > {}".format(
                     transactional_dataset,
                     transactionalDomains_txt),
                 in_files=["getTransactionalDomains.py2",
                           transactional_dataset],
                 out=[transactionalDomains_txt]))
-p.add(yap.Block(transactionalDomainsUniq_txt,
+p.add(yap.Block(gen_prefix + transactionalDomainsUniq_txt,
                 "cat {} | sort | uniq > {}".format(
                     transactionalDomains_txt,
                     transactionalDomainsUniq_txt),
                 in_files=[transactionalDomains_txt],
                 out=[transactionalDomainsUniq_txt]))
-p.add(yap.Block(fulltextPremises_json,
+p.add(yap.Block(gen_prefix + fulltextPremises_json,
                 "python3 processFulltextPremises.py --input-file {} > {}".format(
                     fulltextPremises_xml,
                     fulltextPremises_json),
@@ -144,32 +146,32 @@ in_f = ["processFulltextPremises.py",
         importantDomains_txt,
         blacklist_txt]
 out = [fulltextPremisesFiltered_json]
-p.add(yap.Block(fulltextPremisesFiltered_json,
+p.add(yap.Block(gen_prefix + fulltextPremisesFiltered_json,
                 c,
                 in_files=in_f,
                 out=out))
-p.add(yap.Block(blacklistAdeptsDomains_txt,
+p.add(yap.Block(gen_prefix + blacklistAdeptsDomains_txt,
                 c,
                 in_files=in_f,
                 out=out
                 ))
-p.add(yap.Block(blacklistAdeptsDomains_txt,
+p.add(yap.Block(gen_prefix + blacklistAdeptsDomains_txt,
                 c,
                 in_files=in_f,
                 out=out
                 ))
-p.add(yap.Block(fulltextPremisesTitle_txt,
+p.add(yap.Block(gen_prefix + fulltextPremisesTitle_txt,
                 "python3 titleJson2Txt.py --input-file {} > {}".format(
                     fulltextPremises_json,
                     fulltextPremisesTitle_txt),
                 in_files=["titleJson2Txt.py",
                           fulltextPremises_json],
                 out=[fulltextPremisesTitle_txt]))
-p.add(yap.Block(getffqTitle_txt,
+p.add(yap.Block(gen_prefix + getffqTitle_txt,
                 "scli getffq -f nametag0_if -c -v -s 10000 > {}".format(
                     getffqTitle_txt),
                 out=[getffqTitle_txt]))
-p.add(yap.Block(fulltextPremisesGetffqTitle_txt,
+p.add(yap.Block(gen_prefix + fulltextPremisesGetffqTitle_txt,
                 "cat {} {} > {}".format(
                     getffqTitle_txt,
                     fulltextPremisesTitle_txt,
@@ -178,7 +180,7 @@ p.add(yap.Block(fulltextPremisesGetffqTitle_txt,
                 in_files=[getffqTitle_txt,
                           fulltextPremisesTitle_txt],
                 out=[fulltextPremisesGetffqTitle_txt]))
-p.add(yap.Block(suffixFile_json,
+p.add(yap.Block(gen_prefix + suffixFile_json,
                 "python3 nametag-org-suffix.py -j -l 2 -n 20 -c 30 "
                 "--input-file {} > {};".format(
                     fulltextPremisesGetffqTitle_txt,
@@ -198,7 +200,7 @@ p.add(yap.Block(suffixFile_json,
                 in_files=["nametag-org-suffix.py",
                           fulltextPremisesGetffqTitle_txt],
                 out=[suffixFile_json, suffixFile_svg]))
-p.add(yap.Block(fulltextPremisesFilteredWithRoots_json,
+p.add(yap.Block(gen_prefix + fulltextPremisesFilteredWithRoots_json,
                 "python3 getOrgTitleRoot.py -d -s {} -j {} > {}".format(
                     suffixFile_json,
                     fulltextPremisesFiltered_json,
@@ -208,7 +210,7 @@ p.add(yap.Block(fulltextPremisesFilteredWithRoots_json,
                           suffixFile_json,
                           fulltextPremisesFiltered_json],
                 out=[fulltextPremisesFilteredWithRoots_json]))
-p.add(yap.Block(fulltextPremisesMapping_json,
+p.add(yap.Block(gen_prefix + fulltextPremisesMapping_json,
                 "python3 createMapping.py --input-file {} > {}".format(
                     fulltextPremisesFilteredWithRoots_json,
                     fulltextPremisesMapping_json,
@@ -216,7 +218,7 @@ p.add(yap.Block(fulltextPremisesMapping_json,
                 in_files=["createMapping.py",
                           fulltextPremisesFilteredWithRoots_json],
                 out=[fulltextPremisesMapping_json]))
-p.add(yap.Block(fulltextPremisesReversedMapping_json,
+p.add(yap.Block(gen_prefix + fulltextPremisesReversedMapping_json,
                 "python3 reverseMapping.py --input-file {} > {}".format(
                     fulltextPremisesMapping_json,
                     fulltextPremisesReversedMapping_json,
