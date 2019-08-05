@@ -385,7 +385,8 @@ func (p Pipeline) Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[st
 	name := splitName[len(splitName)-1]
 	log.Println("name is", name, "for", p.FullName)
 	if name != "" {
-		innerCtx := ctx.Subgraph(name, dot.ClusterOption{})
+		innerCtx := ctx
+		//innerCtx := ctx.Subgraph(name, dot.ClusterOption{})
 
 		// virtual block node
 		node := innerCtx.Node(strings.ToUpper(name)).Attr("shape", pipelineShape)
