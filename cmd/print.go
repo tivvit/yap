@@ -1,0 +1,22 @@
+package cmd
+
+import (
+	"github.com/spf13/cobra"
+	"github.com/tivvit/yap/pkg"
+	"gopkg.in/yaml.v3"
+	"log"
+)
+
+var printCmd = &cobra.Command{
+	Use:   "print",
+	Short: "print final yaml",
+	Long:  ``,
+	Run: func(cmd *cobra.Command, args []string) {
+		p := pkg.Load()
+		b, err := yaml.Marshal(p)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		log.Println(string(b))
+	},
+}

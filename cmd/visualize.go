@@ -4,7 +4,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tivvit/yap/pkg"
 	"github.com/tivvit/yap/pkg/stateStorage"
-	"gopkg.in/yaml.v3"
 	"log"
 )
 
@@ -14,14 +13,12 @@ var visualizeCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		o, err := cmd.Flags().GetString("out")
-		log.Println("OUTPUT FILE", o)
-
-		p := pkg.Load()
-		b, err := yaml.Marshal(p)
 		if err != nil {
 			log.Fatalln(err)
 		}
-		log.Println(string(b))
+		log.Println("OUTPUT FILE", o)
+
+		p := pkg.Load()
 		//for k := range p.Map {
 		//	log.Println(k)
 		//}

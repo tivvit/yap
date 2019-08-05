@@ -33,6 +33,7 @@ var yapCmd = &cobra.Command{
 func init() {
 	yapCmd.AddCommand(runCmd)
 	yapCmd.AddCommand(visualizeCmd)
+	yapCmd.AddCommand(printCmd)
 	visualizeCmd.Flags().StringP("out", "o", "graph.dot", "Output graph filename")
 }
 
