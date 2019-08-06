@@ -35,12 +35,12 @@ func init() {
 	yapCmd.AddCommand(visualizeCmd)
 	yapCmd.AddCommand(printCmd)
 	visualizeCmd.Flags().StringP("out", "o", "graph.dot", "Output graph filename")
-	visualizeCmd.Flags().StringP("outImage", "i", "graph.png", "Output graph image filename")
-	visualizeCmd.Flags().BoolP("noOutConn", "c", false, "Output file connections")
-	visualizeCmd.Flags().BoolP("noPipelineNodes", "n", false, "Pipeline nodes")
-	visualizeCmd.Flags().BoolP("noPipelineBoxes", "b", false, "PipelineBoxes")
-	visualizeCmd.Flags().BoolP("noRunDot", "d", false, "Run dot")
-	visualizeCmd.Flags().BoolP("noLegend", "l", false, "Display legend")
+	visualizeCmd.Flags().StringP("out-image", "i", "graph.png", "Output graph image filename")
+	visualizeCmd.Flags().BoolP("no-out-conn", "C", false, "Disable output file connections")
+	visualizeCmd.Flags().BoolP("no-pipeline-nodes", "N", false, "Disable pipeline nodes")
+	visualizeCmd.Flags().BoolP("no-pipeline-boxes", "B", false, "Disable pipeline boxes")
+	visualizeCmd.Flags().BoolP("no-run-dot", "D", false, "Do not Run dot")
+	visualizeCmd.Flags().BoolP("no-legend", "L", false, "Do not Display legend")
 }
 
 func Execute() {

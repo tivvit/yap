@@ -32,3 +32,8 @@ pipeline:
     exec: ls in
     in:
       - in
+#  task:
+#    exec-sequence:
+#      - shell: echo "ss"
+#      - cmd: python
+#        args: xxx.py
