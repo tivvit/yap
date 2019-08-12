@@ -54,7 +54,7 @@ var visualizeCmd = &cobra.Command{
 
 		log.Println(conf)
 
-		p := pkg.Load()
+		p := pkg.LoadCmd(cmd)
 		//for k := range p.Map {
 		//	log.Println(k)
 		//}

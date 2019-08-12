@@ -12,7 +12,7 @@ var printCmd = &cobra.Command{
 	Short: "print final yaml",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		p := pkg.Load()
+		p := pkg.LoadCmd(cmd)
 		b, err := yaml.Marshal(p)
 		if err != nil {
 			log.Fatalln(err)

@@ -34,6 +34,7 @@ func init() {
 	yapCmd.AddCommand(runCmd)
 	yapCmd.AddCommand(visualizeCmd)
 	yapCmd.AddCommand(printCmd)
+	yapCmd.PersistentFlags().StringP("file", "f", "", "Main yapfile path")
 	visualizeCmd.Flags().StringP("out", "o", "graph.dot", "Output graph filename")
 	visualizeCmd.Flags().StringP("out-image", "i", "graph.png", "Output graph image filename")
 	visualizeCmd.Flags().BoolP("no-out-conn", "C", false, "Disable output file connections")
