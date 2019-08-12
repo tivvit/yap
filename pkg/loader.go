@@ -1,7 +1,7 @@
 package pkg
 
 import (
-	"bytes"
+	"github.com/mattn/go-shellwords"
 	"github.com/spf13/cobra"
 	"github.com/tivvit/yap/pkg/structs"
 	"github.com/tivvit/yap/pkg/utils"
@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"os/exec"
 )
 
 func potentialYapFile(fileName string) bool {
@@ -86,16 +85,13 @@ func LoadFile(fileName string) *structs.PipelineRaw {
 }
 
 func LoadScript(name string) (*structs.PipelineRaw, error) {
-	cmd := exec.Command("python3", name)
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	err := cmd.Run()
+	c, err := shellwords.Parse(name)
 	if err != nil {
-		log.Println("script call failed: ", err)
-		return nil, err
+		log.Fatalln(err)
 	}
+	out := utils.GenericRun(c)
 	p := structs.PipelineRaw{}
-	err = yaml.Unmarshal(out.Bytes(), &p)
+	err = yaml.Unmarshal([]byte(out), &p)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}

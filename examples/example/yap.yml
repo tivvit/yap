@@ -5,7 +5,7 @@ settings:
     file: state.json
 pipeline:
   main:
-    include: example.py
+    include: python3 example.py
     type: script
   test:
     include: test.yml

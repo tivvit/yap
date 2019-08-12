@@ -6,4 +6,4 @@ settings:
 pipeline:
   main:
     type: script
-    include: pipeline.py
+    include: python3 pipeline.py
