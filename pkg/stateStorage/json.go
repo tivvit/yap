@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"os"
 )
 
 type jsonStorage map[string]string
@@ -36,7 +37,12 @@ func (js jsonStorage) write() {
 func NewJsonStorage() *jsonStorage {
 	js := jsonStorage{}
 	// todo configurable
-	b, err := ioutil.ReadFile("state.json")
+	f := "state.json"
+	_, err := os.Stat(f)
+	if os.IsNotExist(err) {
+		js.write()
+	}
+	b, err := ioutil.ReadFile(f)
 	if err != nil {
 		log.Println(err)
 		return &js
