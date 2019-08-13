@@ -17,27 +17,27 @@ var visualizeCmd = &cobra.Command{
 		if err != nil {
 			log.Fatalln(err)
 		}
-		oi, err := cmd.Flags().GetString("outImage")
+		oi, err := cmd.Flags().GetString("out-image")
 		if err != nil {
 			log.Fatalln(err)
 		}
-		oc, err := cmd.Flags().GetBool("noOutConn")
+		oc, err := cmd.Flags().GetBool("no-out-conn")
 		if err != nil {
 			log.Fatalln(err)
 		}
-		pn, err := cmd.Flags().GetBool("noPipelineNodes")
+		pn, err := cmd.Flags().GetBool("no-pipeline-nodes")
 		if err != nil {
 			log.Fatalln(err)
 		}
-		pb, err := cmd.Flags().GetBool("noPipelineBoxes")
+		pb, err := cmd.Flags().GetBool("no-pipeline-boxes")
 		if err != nil {
 			log.Fatalln(err)
 		}
-		d, err := cmd.Flags().GetBool("noRunDot")
+		d, err := cmd.Flags().GetBool("no-run-dot")
 		if err != nil {
 			log.Fatalln(err)
 		}
-		l, err := cmd.Flags().GetBool("noLegend")
+		l, err := cmd.Flags().GetBool("no-legend")
 		if err != nil {
 			log.Fatalln(err)
 		}

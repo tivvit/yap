@@ -102,7 +102,7 @@ p.add(yap.Block(gen_prefix + scannerBypassWhitelist_txt,
                 out=[scannerBypassWhitelist_txt.replace('/', '_')],
                 in_files=["/tmp/nametag-target-mapping-curated-domain-lists"]))
 p.add(yap.Block(gen_prefix + blacklist_txt,
-                "cat {} > {}".format(crossHostingBlacklist_txt, blacklist_txt),
+                "bash -c \"cat {} > {}\"".format(crossHostingBlacklist_txt, blacklist_txt),
                 in_files=[crossHostingBlacklist_txt],
                 out=[blacklist_txt]
                 ))

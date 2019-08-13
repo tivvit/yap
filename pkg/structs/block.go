@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/emicklei/dot"
 	"github.com/mattn/go-shellwords"
+	yapDot "github.com/tivvit/yap/pkg/dot"
 	"github.com/tivvit/yap/pkg/stateStorage"
 	"github.com/tivvit/yap/pkg/utils"
 	"log"
@@ -185,7 +186,7 @@ func (b Block) Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[strin
 	nameFmt := "<tr><td><b>%s</b></td></tr>"
 	name := fmt.Sprintf(nameFmt, b.Name)
 	cmdFmt := `<tr><td><font face="Courier New, Courier, monospace">%s</font></td></tr>`
-	cmd := fmt.Sprintf(cmdFmt, strings.Join(b.Exec, " "))
+	cmd := fmt.Sprintf(cmdFmt, yapDot.EscapeHtml(strings.Join(b.Exec, " ")))
 	descFmt := "<tr><td>%s</td></tr>"
 	desc := ""
 	if b.Description != "" {
