@@ -14,6 +14,7 @@ const (
 	MainName      = ""
 	MainFullName  = MainNamespace + "/" + MainName
 	PipelineShape = "parallelogram"
+	dotPipelinePrefix     = "pipeline:"
 )
 
 type Pipeline struct {
@@ -302,7 +303,7 @@ func (p Pipeline) Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[st
 
 		if conf.PipelineNodes {
 			// virtual block node
-			node := innerCtx.Node(strings.ToUpper(name)).Attr("shape", PipelineShape)
+			node := innerCtx.Node(dotPipelinePrefix + strings.ToUpper(name)).Attr("shape", PipelineShape)
 			(*m)[p.FullName] = node
 		}
 

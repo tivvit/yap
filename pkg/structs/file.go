@@ -10,8 +10,9 @@ import (
 )
 
 const (
-	DirShape  = "septagon"
-	FileShape = "oval"
+	DirShape      = "septagon"
+	FileShape     = "oval"
+	DotFilePrefix = "file:"
 )
 
 type File struct {
@@ -69,19 +70,19 @@ func (f *File) Analyze() {
 func (f File) GetDepsFull() []string {
 	var r []string
 	for _, d := range f.Deps {
-		r = append(r, d.FullName)
+		r = append(r, d.GetFullName())
 	}
 	return r
 }
 
 func (f File) GetFullName() string {
-	return f.Name
+	return DotFilePrefix + f.Name
 }
 
 func (f File) Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[string]dot.Node, conf VisualizeConf) {
 	if f.Analyzed && f.IsDir {
-		(*m)[f.Name] = ctx.Node(f.Name).Attr("shape", DirShape)
+		(*m)[f.GetFullName()] = ctx.Node(DotFilePrefix+ f.Name).Attr("shape", DirShape).Label(f.Name)
 	} else {
-		(*m)[f.Name] = ctx.Node(f.Name).Attr("shape", FileShape)
+		(*m)[f.GetFullName()] = ctx.Node(DotFilePrefix+ f.Name).Attr("shape", FileShape).Label(f.Name)
 	}
 }

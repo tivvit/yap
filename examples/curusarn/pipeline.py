@@ -63,7 +63,7 @@ fulltextPremisesMapping_json = os.path.join(REV_DATA,
 fulltextPremisesReversedMapping_json = os.path.join(REV_DATA,
                                                     "/fulltextPremisesReversedMapping.json")
 
-gen_prefix = "gen_"
+gen_prefix = ""
 
 # USER FACING TARGETS
 

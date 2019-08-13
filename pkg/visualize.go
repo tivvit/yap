@@ -9,6 +9,10 @@ import (
 	"os/exec"
 )
 
+const (
+	dotLegendPrefix = "legend:"
+)
+
 func Visualize(p *structs.Pipeline, name string, conf structs.VisualizeConf) {
 	sm := pipeline.Filter(name, p.GetGraphable())
 	di := dot.NewGraph(dot.Directed)
@@ -24,7 +28,6 @@ func Visualize(p *structs.Pipeline, name string, conf structs.VisualizeConf) {
 	}
 	for n := range fileMap {
 		fileMap[n] = p.MapFiles[n]
-		// todo duplicate names with blocks
 		fileMap[n].Visualize(di, &fileMap, &nodeMap, conf)
 	}
 	for k, n := range p.Map {
@@ -41,7 +44,7 @@ func Visualize(p *structs.Pipeline, name string, conf structs.VisualizeConf) {
 			switch n.(type) {
 			case *structs.Block:
 				for _, d := range n.(*structs.Block).Out {
-					di.Edge(nodeMap[n.GetFullName()], nodeMap[d])
+					di.Edge(nodeMap[n.GetFullName()], nodeMap[structs.DotFilePrefix + d])
 				}
 			}
 		}
@@ -110,15 +113,17 @@ func Visualize(p *structs.Pipeline, name string, conf structs.VisualizeConf) {
 }
 
 func legend(di *dot.Graph, conf structs.VisualizeConf) {
-	legend := di.Subgraph("Legend", dot.ClusterOption{})
-	legend.Node("File").Attr("shape", structs.FileShape)
-	legend.Node("Directory").Attr("shape", structs.DirShape)
+	legend := di.Subgraph(dotLegendPrefix + "Legend", dot.ClusterOption{})
+	legend.Attr("label", "Legend")
+	legend.Node(dotLegendPrefix + "File").Attr("shape", structs.FileShape).Label("File")
+	legend.Node(dotLegendPrefix + "Directory").Attr("shape", structs.DirShape).Label("Directory")
 	pipeline := legend
 	if conf.PipelineBoxes {
-		pipeline = legend.Subgraph("Pipeline", dot.ClusterOption{})
+		pipeline = legend.Subgraph(dotLegendPrefix + "PIPELINE", dot.ClusterOption{})
+		pipeline.Attr("label", "PIPELINE")
 	}
 	if conf.PipelineNodes {
-		pipeline.Node("Pipeline").Attr("shape", structs.PipelineShape)
+		pipeline.Node(dotLegendPrefix + "Pipeline").Attr("shape", structs.PipelineShape).Label("Pipeline")
 	}
 	b := structs.Block{
 		Name:        "Block",

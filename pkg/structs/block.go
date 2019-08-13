@@ -28,6 +28,10 @@ type IncludeBlock struct {
 	Type    string
 }
 
+const (
+	dotBlockPrefix = "block:"
+)
+
 func NewBlockFromMap(name string, m map[string]interface{}) *Block {
 	b := Block{
 		PipelineBlockBase: PipelineBlockBase{},
@@ -179,7 +183,12 @@ func (b Block) Changed(state stateStorage.State, p *Pipeline) bool {
 }
 
 func (b Block) GetDepsFull() []string {
-	return append(b.DepsFull, b.In...)
+	ret := make([]string, len(b.DepsFull))
+	copy(ret, b.DepsFull)
+	for _, f := range b.In {
+		ret = append(ret, DotFilePrefix + f)
+	}
+	return ret
 }
 
 func (b Block) Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[string]dot.Node , conf VisualizeConf) {
@@ -194,7 +203,7 @@ func (b Block) Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[strin
 	}
 	tableFmt := `<table border="0" cellborder="1" cellspacing="0">%s%s%s</table>`
 	label := fmt.Sprintf(fmt.Sprintf(tableFmt, name, desc, cmd))
-	n := ctx.Node(b.Name).Attr("shape", "plain")
+	n := ctx.Node(dotBlockPrefix + b.FullName).Attr("shape", "plain")
 	n.Attr("label", dot.HTML(label))
 	(*m)[b.FullName] = n
 
@@ -204,5 +213,4 @@ func (b Block) Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[strin
 	for _, f := range b.Out {
 		(*fileMap)[f] = nil
 	}
-
 }
