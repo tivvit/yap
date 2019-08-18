@@ -23,6 +23,7 @@ func filterDeps(stageMap map[string]structs.Graphable, name string) map[string]s
 	}
 	g, m, mi := CreateInverseGraph(stageMap)
 	r := make(map[string]structs.Graphable)
+	r[name] = stageMap[name]
 	graph.BFS(g, m[name], func(f, t int, _ int64) {
 		log.Printf("%s -> %s (%d -> %d)", mi[f], mi[t], f, t)
 		r[mi[f]] = stageMap[mi[f]]

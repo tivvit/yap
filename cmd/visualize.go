@@ -10,7 +10,7 @@ import (
 )
 
 var visualizeCmd = &cobra.Command{
-	Use:   "vis",
+	Use:   "vis [block-name]",
 	Short: "visualize",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
