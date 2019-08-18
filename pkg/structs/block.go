@@ -21,6 +21,7 @@ type Block struct {
 	Exec              []string `yaml:"exec,omitempty"`
 	In                []string `yaml:"in,omitempty"`
 	Out               []string `yaml:"out,omitempty"`
+	Env               []string `yaml:"env,omitempty"`
 }
 
 type IncludeBlock struct {
@@ -79,6 +80,13 @@ func NewBlockFromMap(name string, m map[string]interface{}) *Block {
 		}
 		b.Out = out
 	}
+	if m["env"] != nil {
+		var env []string
+		for _, d := range m["env"].([]interface{}) {
+			env = append(env, d.(string))
+		}
+		b.Env = env
+	}
 	return &b
 }
 
@@ -120,7 +128,7 @@ func (b Block) Run(state stateStorage.State, p *Pipeline) {
 		initState[d] = st
 	}
 
-	utils.GenericRun(b.Exec)
+	utils.GenericRunEnv(b.Exec, b.Env)
 	s, err := b.GetState()
 	if err != nil {
 		log.Println(err)

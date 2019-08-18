@@ -3,6 +3,7 @@ package pkg
 import (
 	"github.com/mattn/go-shellwords"
 	"github.com/spf13/cobra"
+	"github.com/tivvit/yap/cmdFlags"
 	"github.com/tivvit/yap/pkg/structs"
 	"github.com/tivvit/yap/pkg/utils"
 	"gopkg.in/yaml.v3"
@@ -40,7 +41,7 @@ func findYapFile() string {
 }
 
 func LoadCmd(cmd *cobra.Command) *structs.Pipeline {
-	f, err := cmd.Flags().GetString("file")
+	f, err := cmd.Flags().GetString(cmdFlags.File)
 	if err != nil {
 		log.Fatalln(err)
 	}

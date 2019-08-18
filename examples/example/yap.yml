@@ -32,6 +32,10 @@ pipeline:
     exec: ls in
     in:
       - in
+  env:
+    exec: env
+    env:
+      - "TEST=1"
 #  task:
 #    exec-sequence:
 #      - shell: echo "ss"

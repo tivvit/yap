@@ -6,13 +6,15 @@ VERSION = 1.0
 
 
 class Block(object):
-    def __init__(self, name: str, exe: str, check=None, desc=None, deps=None, out=None, in_files=None):
+    def __init__(self, name: str, exe: str, check=None, desc=None, deps=None, out=None, in_files=None, env=None):
         if deps is None:
             deps = []
         if out is None:
             out = []
         if in_files is None:
             in_files = []
+        if env is None:
+            env = []
         self.name = name
         self.desc = desc
         self.check = check
@@ -20,6 +22,7 @@ class Block(object):
         self.deps = deps
         self.out = out
         self.in_files = in_files
+        self.env = env
 
     def items(self):
         r = copy.deepcopy(self.__dict__)

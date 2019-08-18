@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/tivvit/yap/cmdFlags"
 	"github.com/tivvit/yap/pkg"
 	"github.com/tivvit/yap/pkg/stateStorage"
 	"github.com/tivvit/yap/pkg/structs"
@@ -13,31 +14,31 @@ var visualizeCmd = &cobra.Command{
 	Short: "visualize",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		o, err := cmd.Flags().GetString("out")
+		o, err := cmd.Flags().GetString(cmdFlags.Out)
 		if err != nil {
 			log.Fatalln(err)
 		}
-		oi, err := cmd.Flags().GetString("out-image")
+		oi, err := cmd.Flags().GetString(cmdFlags.OutImage)
 		if err != nil {
 			log.Fatalln(err)
 		}
-		oc, err := cmd.Flags().GetBool("no-out-conn")
+		oc, err := cmd.Flags().GetBool(cmdFlags.NoOutConn)
 		if err != nil {
 			log.Fatalln(err)
 		}
-		pn, err := cmd.Flags().GetBool("no-pipeline-nodes")
+		pn, err := cmd.Flags().GetBool(cmdFlags.NoPipelineNodes)
 		if err != nil {
 			log.Fatalln(err)
 		}
-		pb, err := cmd.Flags().GetBool("no-pipeline-boxes")
+		pb, err := cmd.Flags().GetBool(cmdFlags.NoPipelineBoxes)
 		if err != nil {
 			log.Fatalln(err)
 		}
-		d, err := cmd.Flags().GetBool("no-run-dot")
+		d, err := cmd.Flags().GetBool(cmdFlags.NoRunDot)
 		if err != nil {
 			log.Fatalln(err)
 		}
-		l, err := cmd.Flags().GetBool("no-legend")
+		l, err := cmd.Flags().GetBool(cmdFlags.NoLegend)
 		if err != nil {
 			log.Fatalln(err)
 		}

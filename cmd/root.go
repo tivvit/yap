@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/tivvit/yap/cmdFlags"
 	"log"
 	"os"
 )
@@ -20,13 +21,7 @@ var yapCmd = &cobra.Command{
 		}
 		os.Exit(0)
 
-		//for _, s := range pl {
-		//	s.Run(js, p)
-		//}
 
-		// todo generate report
-		// todo generate state
-		// todo generate
 	},
 }
 
@@ -34,14 +29,15 @@ func init() {
 	yapCmd.AddCommand(runCmd)
 	yapCmd.AddCommand(visualizeCmd)
 	yapCmd.AddCommand(printCmd)
-	yapCmd.PersistentFlags().StringP("file", "f", "", "Main yapfile path")
-	visualizeCmd.Flags().StringP("out", "o", "graph.dot", "Output graph filename")
-	visualizeCmd.Flags().StringP("out-image", "i", "graph.png", "Output graph image filename")
-	visualizeCmd.Flags().BoolP("no-out-conn", "C", false, "Disable output file connections")
-	visualizeCmd.Flags().BoolP("no-pipeline-nodes", "N", false, "Disable pipeline nodes")
-	visualizeCmd.Flags().BoolP("no-pipeline-boxes", "B", false, "Disable pipeline boxes")
-	visualizeCmd.Flags().BoolP("no-run-dot", "D", false, "Do not Run dot")
-	visualizeCmd.Flags().BoolP("no-legend", "L", false, "Do not Display legend")
+	yapCmd.PersistentFlags().StringP(cmdFlags.File, "f", "", "Main yapfile path")
+	runCmd.Flags().BoolP(cmdFlags.DryRun, "d", false, "Do not run - just check")
+	visualizeCmd.Flags().StringP(cmdFlags.Out, "o", "graph.dot", "Output graph filename")
+	visualizeCmd.Flags().StringP(cmdFlags.OutImage, "i", "graph.png", "Output graph image filename")
+	visualizeCmd.Flags().BoolP(cmdFlags.NoOutConn, "C", false, "Disable output file connections")
+	visualizeCmd.Flags().BoolP(cmdFlags.NoPipelineNodes, "N", false, "Disable pipeline nodes")
+	visualizeCmd.Flags().BoolP(cmdFlags.NoPipelineBoxes, "B", false, "Disable pipeline boxes")
+	visualizeCmd.Flags().BoolP(cmdFlags.NoRunDot, "D", false, "Do not Run dot")
+	visualizeCmd.Flags().BoolP(cmdFlags.NoLegend, "L", false, "Do not Display legend")
 }
 
 func Execute() {
