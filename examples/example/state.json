@@ -1,9 +1,9 @@
 {
 	"/test-again/long-eval": "b026324c6904b2a9cb4b88d6d61c81d1",
 	"/test/long-eval": "b026324c6904b2a9cb4b88d6d61c81d1",
-	"1.txt": "c4ca4238a0b923820dcc509a6f75849b",
-	"deps:/absolute-dep": "{\"/main/a\":\"\",\"1.txt\":\"c4ca4238a0b923820dcc509a6f75849b\"}",
-	"deps:/dir-dep": "{\"in\":\"\"}",
+	"1.txt": "{\"exists\":true,\"mod-time\":\"2019-07-21T21:21:33.983878994+02:00\",\"md5\":\"c4ca4238a0b923820dcc509a6f75849b\"}",
+	"deps:/absolute-dep": "{\"/main/a\":\"\",\"1.txt\":\"{\\\"exists\\\":true,\\\"mod-time\\\":\\\"2019-07-21T21:21:33.983878994+02:00\\\",\\\"md5\\\":\\\"c4ca4238a0b923820dcc509a6f75849b\\\"}\"}",
+	"deps:/dir-dep": "{\"in\":\"{\\\"exists\\\":true,\\\"files\\\":[\\\"in/1.txt\\\",\\\"in/2.txt\\\",\\\"in/in-in/1.txt\\\",\\\"in/in-in/2.txt\\\"],\\\"mod-times\\\":[\\\"2019-07-21T21:21:33.985870158+02:00\\\",\\\"2019-07-21T21:21:33.985870158+02:00\\\",\\\"2019-07-21T21:21:33+02:00\\\",\\\"2019-07-21T21:21:33+02:00\\\"],\\\"md5s\\\":[\\\"c4ca4238a0b923820dcc509a6f75849b\\\",\\\"c81e728d9d4c2f636f067f89cc14862c\\\",\\\"c4ca4238a0b923820dcc509a6f75849b\\\",\\\"c81e728d9d4c2f636f067f89cc14862c\\\"]}\"}",
 	"deps:/double/double-inner": "{}",
 	"deps:/double/double2/double2-inner": "{}",
 	"deps:/env": "{}",
