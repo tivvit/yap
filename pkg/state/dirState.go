@@ -8,8 +8,8 @@ import (
 type DirState struct {
 	Exists   bool                 `json:"exists,omitempty"`
 	Files    []string             `json:"files,omitempty"`
-	ModTimes map[string]time.Time `json:"mod-times,omitempty"`
-	Md5s     map[string]string    `json:"md5s,omitempty"`
+	ModTimes []time.Time `json:"mod-times,omitempty"`
+	Md5s     []string    `json:"md5s,omitempty"`
 }
 
 func (ds DirState) Serialize() (string, error) {

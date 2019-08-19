@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
 	"time"
 )
 
@@ -29,14 +30,32 @@ type File struct {
 }
 
 func (f File) GetState() (string, error) {
+	f.Analyze()
 	if f.IsDir {
-		return f.getDirState()
+		files, err := f.getDirList()
+		if err != nil {
+			return "", err
+		}
+		return state.DirState{
+			Exists: f.Exists,
+			Files: files,
+			ModTimes: modTimes(files),
+			Md5s: md5s(files),
+		}.Serialize()
 	} else {
-		return f.getFileState()
+		md5, err := f.getFileMd5()
+		if err != nil {
+			return "", err
+		}
+		return state.FileState{
+			Exists: f.Exists,
+			ModTime: f.ModTime,
+			Md5: md5,
+		}.Serialize()
 	}
 }
 
-func (f File) getFileState() (string, error) {
+func (f File) getFileMd5() (string, error) {
 	r, err := os.Open(f.Name)
 	if err != nil {
 		return "", err
@@ -50,7 +69,7 @@ func (f File) getFileState() (string, error) {
 	return utils.Md5Checksum(r)
 }
 
-func (f File) getDirState() (string, error) {
+func (f File) getDirList() ([]string, error) {
 	var files []string
 	err := filepath.Walk(f.Name, func(path string, info os.FileInfo, err error) error {
 		if !info.IsDir() {
@@ -58,21 +77,34 @@ func (f File) getDirState() (string, error) {
 		}
 		return nil
 	})
-	if err != nil {
-		log.Println(err)
-	}
-	log.Println(files)
-	//return files, err
-	return "", nil
+	return files, err
 }
 
-func (f File) changedModTime() bool {
-	oldModTime := f.ModTime
-	f.Analyze()
-	if oldModTime != f.ModTime {
-		return true
+func modTimes(files []string) []time.Time {
+	var modTimes []time.Time
+	for _, f := range files {
+		fo := File{
+			Name: f,
+		}
+		fo.Analyze()
+		modTimes = append(modTimes, fo.ModTime)
 	}
-	return false
+	return modTimes
+}
+
+func md5s(files []string) []string {
+	var md5s []string
+	for _, f := range files {
+		fo := File{
+			Name: f,
+		}
+		md5, err := fo.getFileMd5()
+		if err != nil {
+			log.Println(err)
+		}
+		md5s = append(md5s, md5)
+	}
+	return md5s
 }
 
 func loadState(s string) (interface{}, error) {
@@ -93,22 +125,26 @@ func loadState(s string) (interface{}, error) {
 }
 
 func (f File) Changed(s stateStorage.State, p *Pipeline) bool {
+	// todo this should compare with some exact state not with my state
 	oldState, err := loadState(s.Get(f.GetFullName()))
 	if err != nil {
 		// not possible to read state = recompute
 		return true
 	}
-	// todo this supposes that the file has been analyzed (right before the call)
+	f.Analyze()
 	switch oldState.(type) {
 	case state.FileState:
 		oldFS := oldState.(state.FileState)
 		if f.Exists != oldFS.Exists {
 			return true
 		}
+		if f.Analyzed && f.IsDir {
+			return true
+		}
 		if f.ModTime != oldFS.ModTime {
 			return true
 		}
-		md5, err := f.getFileState()
+		md5, err := f.getFileMd5()
 		if err != nil {
 			log.Println(err)
 			return true
@@ -122,27 +158,29 @@ func (f File) Changed(s stateStorage.State, p *Pipeline) bool {
 		if f.Exists != oldDS.Exists {
 			return true
 		}
-		// todo check file list
-		// todo check mod times
-		// todo check md5s
+		if f.Analyzed && !f.IsDir {
+			return true
+		}
+		dirList, err := f.getDirList()
+		if err != nil {
+			log.Println(err)
+			return true
+		}
+		if !reflect.DeepEqual(dirList, oldDS.Files) {
+			return true
+		}
+		modTimes := modTimes(dirList)
+		if !reflect.DeepEqual(modTimes, oldDS.ModTimes) {
+			return true
+		}
+		md5s := md5s(dirList)
+		if !reflect.DeepEqual(md5s, oldDS.Md5s) {
+			return true
+		}
+		return false
 	default:
 		return true
 	}
-	return true
-	//if !f.Analyzed {
-	//	return true
-	//}
-	//if f.changedModTime() {
-	//	return true
-	//}
-	//md5Sum, err := f.GetState()
-	//if err != nil {
-	//	return true
-	//}
-	//if s != md5Sum {
-	//	return true
-	//}
-	//return false
 }
 
 func (f *File) Analyze() {
