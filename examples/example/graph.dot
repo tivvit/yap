@@ -1,46 +1,23 @@
 digraph  {
-	subgraph cluster_s2 {
-		ID = "cluster_s2";
+	subgraph cluster_s0 {
+		ID = "cluster_s0";
 		subgraph cluster_s0 {
 			ID = "cluster_s0";
 			label="PIPELINE";
-			n13[label="Pipeline",shape="parallelogram"];
+			n7[label="Pipeline",shape="parallelogram"];
 			
 		}label="Legend";
-		n14[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>Block</b></td></tr><tr><td>This is a Block</td></tr><tr><td><font face="Courier New, Courier, monospace">code -h</font></td></tr></table>>,shape="plain"];
-		n12[label="Directory",shape="septagon"];
-		n11[label="File",shape="oval"];
-		
-	}subgraph cluster_s0 {
-		ID = "cluster_s0";
-		label="main";
-		n2[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>B</b></td></tr><tr><td><font face="Courier New, Courier, monospace">ls -la</font></td></tr></table>>,shape="plain"];
-		n3[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>a</b></td></tr><tr><td><font face="Courier New, Courier, monospace">ls</font></td></tr></table>>,shape="plain"];
-		n1[label="MAIN",shape="parallelogram"];
-		
-	}subgraph cluster_s1 {
-		ID = "cluster_s1";
-		label="test";
-		n6[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>long-eval</b></td></tr><tr><td><font face="Courier New, Courier, monospace">python3 -c import time; time.sleep(1)</font></td></tr></table>>,shape="plain"];
-		n5[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>test</b></td></tr><tr><td><font face="Courier New, Courier, monospace">pwd</font></td></tr></table>>,shape="plain"];
-		n4[label="TEST",shape="parallelogram"];
+		n8[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>Block</b></td></tr><tr><td>This is a Block</td></tr><tr><td><font face="Courier New, Courier, monospace">code -h</font></td></tr></table>>,shape="plain"];
+		n6[label="Directory",shape="septagon"];
+		n5[label="File",shape="oval"];
 		
 	}
-	n10[label="1.txt",shape="oval"];
-	n8[label="files.txt",shape="oval"];
-	n9[label="files1.txt",shape="oval"];
-	n7[label="in.txt",shape="oval"];
+	n2[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>a</b></td></tr><tr><td><font face="Courier New, Courier, monospace">ls</font></td></tr></table>>,shape="plain"];
+	n1[label="files.txt",shape="oval"];
+	n4[label="files1.txt",shape="oval"];
+	n3[label="in.txt",shape="oval"];
 	n2->n1;
+	n2->n4;
 	n3->n2;
-	n3->n8;
-	n3->n9;
-	n3->n1;
-	n6->n10;
-	n6->n4;
-	n5->n6;
-	n5->n4;
-	n7->n2;
-	n7->n3;
-	n1->n4;
 	
 }

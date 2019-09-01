@@ -17,16 +17,22 @@ func Filter(name string, stageMap map[string]structs.Graphable) map[string]struc
 
 func filterDeps(stageMap map[string]structs.Graphable, name string) map[string]structs.Graphable {
 	var found bool
+	oldName := name
 	_, found = stageMap[name]
 	if !found {
 		// try files
-		oldName := name
-		name = structs.DotFilePrefix + name
+		name = structs.Separator + oldName
 		log.Printf("%s not found trying %s", oldName, name)
 		_, found = stageMap[name]
 	}
 	if !found {
-		log.Printf("Target %s not found \n", name)
+		// try files
+		name = structs.DotFilePrefix + oldName
+		log.Printf("%s not found trying %s", oldName, name)
+		_, found = stageMap[name]
+	}
+	if !found {
+		log.Printf("Target %s not found \n", oldName)
 		return map[string]structs.Graphable{}
 	}
 	g, m, mi := CreateInverseGraph(stageMap)

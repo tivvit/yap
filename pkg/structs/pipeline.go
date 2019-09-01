@@ -10,6 +10,7 @@ import (
 )
 
 const (
+	Separator         = "/"
 	MainNamespace     = ""
 	MainName          = ""
 	MainFullName      = MainNamespace + "/" + MainName
