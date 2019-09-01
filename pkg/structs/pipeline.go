@@ -235,10 +235,11 @@ func (p Pipeline) GetGraphable() map[string]Graphable {
 		m[k] = v
 	}
 	for k, v := range p.MapFiles {
-		if _, ok := m[k]; ok {
-			log.Printf("%s is duplicate (present in block and in files) - will use the block", k)
+		name := DotFilePrefix + k
+		if _, ok := m[name]; ok {
+			log.Printf("%s is duplicate (present in block and in files) - will use the block", name)
 		} else {
-			m[k] = v
+			m[name] = v
 		}
 	}
 	return m

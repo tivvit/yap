@@ -65,10 +65,18 @@ func createGraph(stages map[string]structs.Graphable, inverse bool) (*graph.Muta
 	}
 	for n, s := range stages {
 		for _, d := range s.GetDepsFull() {
+			nn, ok := m[n]
+			if !ok {
+				log.Printf("Elem %s not present in map", n)
+			}
+			dd, ok := m[d]
+			if !ok {
+				log.Printf("Elem %s not present in map", d)
+			}
 			if inverse {
-				g.Add(m[n], m[d])
+				g.Add(nn, dd)
 			} else {
-				g.Add(m[d], m[n])
+				g.Add(dd, nn)
 			}
 		}
 	}

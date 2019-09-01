@@ -4,26 +4,20 @@ digraph  {
 		subgraph cluster_s0 {
 			ID = "cluster_s0";
 			label="PIPELINE";
-			n10[label="Pipeline",shape="parallelogram"];
+			n7[label="Pipeline",shape="parallelogram"];
 			
 		}label="Legend";
-		n11[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>Block</b></td></tr><tr><td>This is a Block</td></tr><tr><td><font face="Courier New, Courier, monospace">code -h</font></td></tr></table>>,shape="plain"];
-		n9[label="Directory",shape="septagon"];
-		n8[label="File",shape="oval"];
+		n8[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>Block</b></td></tr><tr><td>This is a Block</td></tr><tr><td><font face="Courier New, Courier, monospace">code -h</font></td></tr></table>>,shape="plain"];
+		n6[label="Directory",shape="septagon"];
+		n5[label="File",shape="oval"];
 		
 	}
-	n2[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>dir-dep</b></td></tr><tr><td><font face="Courier New, Courier, monospace">ls in</font></td></tr></table>>,shape="plain"];
-	n3[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>B</b></td></tr><tr><td><font face="Courier New, Courier, monospace">ls -la</font></td></tr></table>>,shape="plain"];
-	n1[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>a</b></td></tr><tr><td><font face="Courier New, Courier, monospace">ls</font></td></tr></table>>,shape="plain"];
-	n7[label="files.txt",shape="oval"];
+	n2[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>a</b></td></tr><tr><td><font face="Courier New, Courier, monospace">ls</font></td></tr></table>>,shape="plain"];
+	n1[label="files.txt",shape="oval"];
 	n4[label="files1.txt",shape="oval"];
-	n5[label="in",shape="septagon"];
-	n6[label="in.txt",shape="oval"];
-	n1->n3;
-	n1->n7;
-	n1->n4;
-	n5->n2;
-	n6->n3;
-	n6->n1;
+	n3[label="in.txt",shape="oval"];
+	n2->n1;
+	n2->n4;
+	n3->n2;
 	
 }
