@@ -29,6 +29,7 @@ func init() {
 	yapCmd.AddCommand(runCmd)
 	yapCmd.AddCommand(visualizeCmd)
 	yapCmd.AddCommand(printCmd)
+	yapCmd.AddCommand(listCmd)
 	yapCmd.PersistentFlags().StringP(cmdFlags.File, "f", "", "Main yapfile path")
 	runCmd.Flags().BoolP(cmdFlags.DryRun, "d", false, "Do not run - just check")
 	visualizeCmd.Flags().StringP(cmdFlags.Out, "o", "graph.dot", "Output graph filename")

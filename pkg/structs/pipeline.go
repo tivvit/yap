@@ -10,11 +10,11 @@ import (
 )
 
 const (
-	MainNamespace = ""
-	MainName      = ""
-	MainFullName  = MainNamespace + "/" + MainName
-	PipelineShape = "parallelogram"
-	dotPipelinePrefix     = "pipeline:"
+	MainNamespace     = ""
+	MainName          = ""
+	MainFullName      = MainNamespace + "/" + MainName
+	PipelineShape     = "parallelogram"
+	dotPipelinePrefix = "pipeline:"
 )
 
 type Pipeline struct {
@@ -304,7 +304,7 @@ func (p Pipeline) Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[st
 
 		if conf.PipelineNodes {
 			// virtual block node
-			node := innerCtx.Node(dotPipelinePrefix + strings.ToUpper(name)).Attr("shape", PipelineShape)
+			node := innerCtx.Node(dotPipelinePrefix+strings.ToUpper(name)).Attr("shape", PipelineShape)
 			node.Label(strings.ToUpper(name))
 			(*m)[p.FullName] = node
 		}
@@ -321,4 +321,12 @@ func (p Pipeline) Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[st
 			v.Visualize(ctx, fileMap, m, conf)
 		}
 	}
+}
+
+func (p Pipeline) List() []string {
+	var r []string
+	for k := range p.GetGraphable() {
+		r = append(r, k)
+	}
+	return r
 }
