@@ -16,7 +16,15 @@ func Filter(name string, stageMap map[string]structs.Graphable) map[string]struc
 }
 
 func filterDeps(stageMap map[string]structs.Graphable, name string) map[string]structs.Graphable {
-	_, found := stageMap[name]
+	var found bool
+	_, found = stageMap[name]
+	if !found {
+		// try files
+		oldName := name
+		name = structs.DotFilePrefix + name
+		log.Printf("%s not found trying %s", oldName, name)
+		_, found = stageMap[name]
+	}
 	if !found {
 		log.Printf("Target %s not found \n", name)
 		return map[string]structs.Graphable{}
