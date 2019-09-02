@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"strings"
 )
 
 func GenericRun(cmd []string) string {
@@ -21,7 +20,7 @@ func GenericRunEnv(cmd []string, environ []string) string {
 }
 
 func run(cmd []string, env []string) string {
-	log.Println(strings.Join(cmd, " "))
+	//log.Println(strings.Join(cmd, " "))
 	c := exec.Command(cmd[0], cmd[1:]...)
 	c.Env = env
 	var out bytes.Buffer
@@ -30,7 +29,7 @@ func run(cmd []string, env []string) string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println(out.String())
+	//log.Println(out.String())
 	return out.String()
 }
 
