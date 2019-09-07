@@ -2,7 +2,6 @@ package structs
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/emicklei/dot"
 	"github.com/mattn/go-shellwords"
@@ -163,10 +162,11 @@ func (b Block) Run(state stateStorage.State, p *Pipeline) {
 func (b Block) GetState() (string, error) {
 	// todo this should be used for checking external deps (i.e. download over internet)
 	if len(b.Check) == 0 {
-		log.Printf("phase %s does not support state checking", b.Name)
-		// todo custom error
-		return "", errors.New("phase does not support state check")
+		// no explicit state check
+		// todo get state with deps? - probably not - this may serve as interface for others to get state of this block
+		return "", nil
 	}
+	log.Println("Explicit state check `$s`", strings.Join(b.Check, " "))
 	out := utils.GenericRun(b.Check)
 	cs, err := utils.Md5Checksum(strings.NewReader(out))
 	if err != nil {
