@@ -31,6 +31,9 @@ type IncludeBlock struct {
 
 const (
 	dotBlockPrefix = "block:"
+	StateNamePrefix = "__internal:"
+	StateNameExec = "exec"
+	StateNameEnv = "env"
 )
 
 func NewBlockFromMap(name string, m map[string]interface{}) *Block {
@@ -127,6 +130,9 @@ func (b Block) Run(state stateStorage.State, p *Pipeline) {
 		}
 		initState[d] = st
 	}
+	// add command to state
+	initState[StateNamePrefix + StateNameExec] = strings.Join(b.Exec, ",")
+	initState[StateNamePrefix + StateNameEnv] = strings.Join(b.Env, ",")
 
 	utils.GenericRunEnv(b.Exec, b.Env)
 	s, err := b.GetState()
