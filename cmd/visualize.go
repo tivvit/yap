@@ -10,7 +10,8 @@ import (
 )
 
 var visualizeCmd = &cobra.Command{
-	Use:   "vis [block-name]",
+	Use:   "visualize [block-name]",
+	Aliases: []string{"v", "vis"},
 	Short: "visualize",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {

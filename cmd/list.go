@@ -11,6 +11,7 @@ import (
 
 var listCmd = &cobra.Command{
 	Use:   "list [name-regex]",
+	Aliases: []string{"l"},
 	Short: "list",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {

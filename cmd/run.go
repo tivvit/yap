@@ -12,6 +12,7 @@ import (
 
 var runCmd = &cobra.Command{
 	Use:   "run [block-name]",
+	Aliases: []string{"r"},
 	Short: "run",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {

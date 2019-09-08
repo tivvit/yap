@@ -9,6 +9,7 @@ import (
 
 var printCmd = &cobra.Command{
 	Use:   "print",
+	Aliases: []string{"p"},
 	Short: "print final yaml",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
