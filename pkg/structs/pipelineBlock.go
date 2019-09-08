@@ -26,7 +26,7 @@ type Graphable interface {
 }
 
 type Visualizable interface {
-	Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[string]dot.Node, conf VisualizeConf)
+	Visualize(ctx *dot.Graph, p *Pipeline, fileMap *map[string]*File, m *map[string]dot.Node, conf VisualizeConf)
 }
 
 type PipelineBlockBase struct {

@@ -43,6 +43,10 @@ var visualizeCmd = &cobra.Command{
 		if err != nil {
 			log.Fatalln(err)
 		}
+		s, err := cmd.Flags().GetBool(cmdFlags.Check)
+		if err != nil {
+			log.Fatalln(err)
+		}
 
 		conf := structs.VisualizeConf{
 			OutputFile: o,
@@ -52,6 +56,7 @@ var visualizeCmd = &cobra.Command{
 			PipelineBoxes: !pb,
 			RunDot: !d,
 			Legend: !l,
+			Check: s,
 		}
 
 		log.Println(conf)
@@ -61,14 +66,16 @@ var visualizeCmd = &cobra.Command{
 		//	log.Println(k)
 		//}
 		// todo user input
-		log.Println("map", p.Map)
-		log.Println("mapFiles")
-		for k, f := range p.MapFiles {
-			log.Println(k, f.Name, f.Deps)
-			for _, d := range f.Deps {
-				log.Println(d.FullName)
-			}
-		}
+
+		//log.Println("map", p.Map)
+		//log.Println("mapFiles", p.MapFiles)
+		//for k, f := range p.MapFiles {
+		//	log.Println(k, f.Name, f.Deps)
+		//	for _, d := range f.Deps {
+		//		log.Println(d.FullName)
+		//	}
+		//}
+
 		js := stateStorage.NewJsonStorage()
 		//log.Println("parent", p.Parent)
 		//log.Println(p.Pipeline["test"].(*structs.Pipeline).DepsFull)

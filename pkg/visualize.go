@@ -4,6 +4,7 @@ import (
 	"github.com/emicklei/dot"
 	"github.com/tivvit/yap/pkg/pipeline"
 	"github.com/tivvit/yap/pkg/structs"
+	"github.com/tivvit/yap/pkg/utils"
 	"log"
 	"os"
 	"os/exec"
@@ -21,14 +22,14 @@ func Visualize(p *structs.Pipeline, name string, conf structs.VisualizeConf) {
 	for _, v := range sm {
 		switch v.(type) {
 		case structs.Visualizable:
-			v.(structs.Visualizable).Visualize(di, &fileMap, &nodeMap, conf)
+			v.(structs.Visualizable).Visualize(di, p, &fileMap, &nodeMap, conf)
 		default:
 			log.Println("Unexpected type %T which is not Visualizable", v)
 		}
 	}
 	for n := range fileMap {
 		fileMap[n] = p.MapFiles[n]
-		fileMap[n].Visualize(di, &fileMap, &nodeMap, conf)
+		fileMap[n].Visualize(di, p, &fileMap, &nodeMap, conf)
 	}
 	for k, n := range p.Map {
 		if _, ok := nodeMap[k]; !ok {
@@ -59,7 +60,7 @@ func Visualize(p *structs.Pipeline, name string, conf structs.VisualizeConf) {
 	}
 
 	if conf.Legend {
-		legend(di, conf)
+		legend(p, di, conf)
 	}
 
 	f, _ := os.Create(conf.OutputFile)
@@ -112,7 +113,7 @@ func Visualize(p *structs.Pipeline, name string, conf structs.VisualizeConf) {
 	//p.tryDot()
 }
 
-func legend(di *dot.Graph, conf structs.VisualizeConf) {
+func legend(p *structs.Pipeline, di *dot.Graph, conf structs.VisualizeConf) {
 	legend := di.Subgraph(dotLegendPrefix + "Legend", dot.ClusterOption{})
 	legend.Attr("label", "Legend")
 	legend.Node(dotLegendPrefix + "File").Attr("shape", structs.FileShape).Label("File")
@@ -130,8 +131,13 @@ func legend(di *dot.Graph, conf structs.VisualizeConf) {
 		Description: "This is a Block",
 		Exec:        []string{"code", "-h"},
 	}
+	if conf.Check {
+		legend.Node(dotLegendPrefix + "Changed").Attr("shape", structs.FileShape).Label("Changed (file)").Attr("color", utils.DotChangedColor)
+	}
 	legendMap := map[string]dot.Node{}
-	b.Visualize(legend, nil, &legendMap, conf)
+	// no checking in legend
+	conf.Check = false
+	b.Visualize(legend, p, nil, &legendMap, conf)
 }
 
 func tryDot(conf structs.VisualizeConf) {

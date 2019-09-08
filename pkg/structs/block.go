@@ -94,7 +94,7 @@ func NewBlockFromMap(name string, m map[string]interface{}) *Block {
 }
 
 func (b Block) Run(state stateStorage.State, p *Pipeline) {
-	if !b.Changed(state, p) {
+	if !b.Changed(p.State, p) {
 		return
 	}
 
@@ -109,14 +109,15 @@ func (b Block) Run(state stateStorage.State, p *Pipeline) {
 		state.Set(b.FullName, s)
 	}
 
-	for _, f := range b.Out {
-		c, err := p.MapFiles[f].GetState()
+	// state of input files has to be stored somewhere - this is probably the correct place because the block is using the files
+	for _, f := range append(b.Out, b.In...) {
+		file :=  p.MapFiles[f]
+		c, err := file.GetState()
 		if err != nil {
 			log.Println(err)
 			continue
 		}
-		// todo with prefix?
-		state.Set(f, c)
+		state.Set(file.GetFullName(), c)
 	}
 
 	state.Set(utils.DepsPrefix+b.FullName, initState)
@@ -165,11 +166,11 @@ func (b Block) GetDepsState(p *Pipeline) string {
 func (b Block) GetState() (string, error) {
 	state := map[string]string{}
 	// add command to state
-	state[StateNameExec] = strings.Join(b.Exec, ",")
+	state[StateNameExec] = strings.Join(b.Exec, " ")
 	// add env to state
 	state[StateNameEnv] = strings.Join(b.Env, ",")
 	// add check command to state
-	state[StateNameCheckCmd] = strings.Join(b.Check, ",")
+	state[StateNameCheckCmd] = strings.Join(b.Check, " ")
 
 	if len(b.Check) > 0 {
 		// this should be used for checking external deps (i.e. download over internet)
@@ -226,7 +227,7 @@ func (b Block) GetDepsFull() []string {
 	return ret
 }
 
-func (b Block) Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[string]dot.Node, conf VisualizeConf) {
+func (b Block) Visualize(ctx *dot.Graph, p *Pipeline, fileMap *map[string]*File, m *map[string]dot.Node, conf VisualizeConf) {
 	nameFmt := "<tr><td><b>%s</b></td></tr>"
 	name := fmt.Sprintf(nameFmt, b.Name)
 	cmdFmt := `<tr><td><font face="Courier New, Courier, monospace">%s</font></td></tr>`
@@ -240,6 +241,9 @@ func (b Block) Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[strin
 	label := fmt.Sprintf(fmt.Sprintf(tableFmt, name, desc, cmd))
 	n := ctx.Node(dotBlockPrefix+b.FullName).Attr("shape", "plain")
 	n.Attr("label", dot.HTML(label))
+	if conf.Check && b.Changed(p.State, p) {
+		n.Attr("color", utils.DotChangedColor)
+	}
 	(*m)[b.FullName] = n
 
 	for _, f := range b.In {

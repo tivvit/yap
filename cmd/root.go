@@ -39,6 +39,7 @@ func init() {
 	visualizeCmd.Flags().BoolP(cmdFlags.NoPipelineBoxes, "B", false, "Disable pipeline boxes")
 	visualizeCmd.Flags().BoolP(cmdFlags.NoRunDot, "D", false, "Do not Run dot")
 	visualizeCmd.Flags().BoolP(cmdFlags.NoLegend, "L", false, "Do not Display legend")
+	visualizeCmd.Flags().BoolP(cmdFlags.Check, "s", false, "Check state changes")
 }
 
 func Execute() {

@@ -8,4 +8,5 @@ type VisualizeConf struct {
 	PipelineBoxes     bool
 	RunDot            bool
 	Legend            bool
+	Check             bool
 }

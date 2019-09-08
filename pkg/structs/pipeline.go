@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/emicklei/dot"
 	"github.com/tivvit/yap/pkg/stateStorage"
+	"github.com/tivvit/yap/pkg/utils"
 	"log"
 	"strings"
 )
@@ -25,6 +26,7 @@ type Pipeline struct {
 	Pipeline           map[string]PipelineBlock `yaml:"pipeline"`
 	Map                map[string]PipelineBlock `yaml:"-"`
 	MapFiles           map[string]*File         `yaml:"-"`
+	State              stateStorage.State       `yaml:"-"`
 }
 
 func NewPipeline(version float32, settings map[string]interface{}, deps []string) *Pipeline {
@@ -293,20 +295,29 @@ func (p Pipeline) GetGraphable() map[string]Graphable {
 //	return nodesMap, deps
 //}
 
-func (p Pipeline) Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[string]dot.Node, conf VisualizeConf) {
+func (p Pipeline) Visualize(ctx *dot.Graph, pi *Pipeline, fileMap *map[string]*File, m *map[string]dot.Node, conf VisualizeConf) {
 	splitName := strings.Split(p.FullName, "/")
 	name := splitName[len(splitName)-1]
 	//log.Println("name is", name, "for", p.FullName)
 	if name != "" {
 		innerCtx := ctx
+		// todo check
+		//changed := conf.Check && p.Changed(pi.State, pi)
+		changed := false
 		if conf.PipelineBoxes {
 			innerCtx = ctx.Subgraph(name, dot.ClusterOption{})
+			if changed  {
+				innerCtx.Attr("color", utils.DotChangedColor)
+			}
 		}
 
 		if conf.PipelineNodes {
 			// virtual block node
 			node := innerCtx.Node(dotPipelinePrefix+strings.ToUpper(name)).Attr("shape", PipelineShape)
 			node.Label(strings.ToUpper(name))
+			if changed {
+				node.Attr("color", utils.DotChangedColor)
+			}
 			(*m)[p.FullName] = node
 		}
 
@@ -315,11 +326,11 @@ func (p Pipeline) Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[st
 		//	(*m)[name] = node
 		//}
 		for _, v := range p.Pipeline {
-			v.Visualize(innerCtx, fileMap, m, conf)
+			v.Visualize(innerCtx, pi, fileMap, m, conf)
 		}
 	} else {
 		for _, v := range p.Pipeline {
-			v.Visualize(ctx, fileMap, m, conf)
+			v.Visualize(ctx, pi, fileMap, m, conf)
 		}
 	}
 }

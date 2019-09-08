@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"github.com/tivvit/yap/pkg/stateStorage"
 	"github.com/tivvit/yap/pkg/structs"
 	"github.com/tivvit/yap/pkg/utils"
 	"log"
@@ -9,6 +10,7 @@ import (
 func parsePipelinev1(raw *structs.PipelineRaw) *structs.Pipeline {
 	// todo check duplicate keys (is it even possible here? - yaml solves that?)
 	p := structs.NewPipeline(raw.Version, raw.Settings, raw.Deps)
+	p.State = stateStorage.NewJsonStorage()
 	for k, v := range (*raw).Pipeline {
 		//log.Println(k, v)
 		vm, ok := v.(map[string]interface{})

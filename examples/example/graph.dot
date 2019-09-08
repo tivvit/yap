@@ -1,33 +1,83 @@
 digraph  {
-	subgraph cluster_s1 {
-		ID = "cluster_s1";
+	subgraph cluster_s2 {
+		ID = "cluster_s2";
+		subgraph cluster_s0 {
+			ID = "cluster_s0";
+			label="double2";
+			n13[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>double2-inner</b></td></tr><tr><td><font face="Courier New, Courier, monospace">ls</font></td></tr></table>>,shape="plain"];
+			n12[label="DOUBLE2",shape="parallelogram"];
+			
+		}label="double";
+		n14[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>double-inner</b></td></tr><tr><td><font face="Courier New, Courier, monospace">ls</font></td></tr></table>>,shape="plain"];
+		n11[label="DOUBLE",shape="parallelogram"];
+		
+	}subgraph cluster_s4 {
+		ID = "cluster_s4";
 		subgraph cluster_s0 {
 			ID = "cluster_s0";
 			label="PIPELINE";
-			n9[label="Pipeline",shape="parallelogram"];
+			n25[label="Pipeline",shape="parallelogram"];
 			
 		}label="Legend";
-		n10[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>Block</b></td></tr><tr><td>This is a Block</td></tr><tr><td><font face="Courier New, Courier, monospace">code -h</font></td></tr></table>>,shape="plain"];
-		n8[label="Directory",shape="septagon"];
-		n7[label="File",shape="oval"];
+		n27[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>Block</b></td></tr><tr><td>This is a Block</td></tr><tr><td><font face="Courier New, Courier, monospace">code -h</font></td></tr></table>>,shape="plain"];
+		n26[color="red",label="Changed (file)",shape="oval"];
+		n24[label="Directory",shape="septagon"];
+		n23[label="File",shape="oval"];
+		
+	}subgraph cluster_s3 {
+		ID = "cluster_s3";
+		label="main";
+		n17[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>B</b></td></tr><tr><td><font face="Courier New, Courier, monospace">ls -la</font></td></tr></table>>,shape="plain"];
+		n16[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>a</b></td></tr><tr><td><font face="Courier New, Courier, monospace">ls</font></td></tr></table>>,shape="plain"];
+		n15[label="MAIN",shape="parallelogram"];
+		
+	}subgraph cluster_s1 {
+		ID = "cluster_s1";
+		label="test";
+		n10[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>long-eval</b></td></tr><tr><td><font face="Courier New, Courier, monospace">python3 -c import time; time.sleep(1)</font></td></tr></table>>,shape="plain"];
+		n9[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>test</b></td></tr><tr><td><font face="Courier New, Courier, monospace">pwd</font></td></tr></table>>,shape="plain"];
+		n8[label="TEST",shape="parallelogram"];
 		
 	}subgraph cluster_s0 {
 		ID = "cluster_s0";
-		label="main";
-		n2[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>B</b></td></tr><tr><td><font face="Courier New, Courier, monospace">ls -la</font></td></tr></table>>,shape="plain"];
-		n3[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>a</b></td></tr><tr><td><font face="Courier New, Courier, monospace">ls</font></td></tr></table>>,shape="plain"];
-		n1[label="MAIN",shape="parallelogram"];
+		label="test-again";
+		n7[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>long-eval</b></td></tr><tr><td><font face="Courier New, Courier, monospace">python3 -c import time; time.sleep(1)</font></td></tr></table>>,shape="plain"];
+		n6[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>test</b></td></tr><tr><td><font face="Courier New, Courier, monospace">pwd</font></td></tr></table>>,shape="plain"];
+		n5[label="TEST-AGAIN",shape="parallelogram"];
 		
 	}
-	n5[label="files.txt",shape="oval"];
-	n6[label="files1.txt",shape="oval"];
-	n4[label="in.txt",shape="oval"];
-	n2->n1;
-	n3->n2;
-	n3->n1;
-	n3->n5;
-	n3->n6;
-	n4->n2;
-	n4->n3;
+	n2[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>absolute-dep</b></td></tr><tr><td><font face="Courier New, Courier, monospace">echo world</font></td></tr></table>>,shape="plain"];
+	n1[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>dir-dep</b></td></tr><tr><td><font face="Courier New, Courier, monospace">ls in</font></td></tr></table>>,shape="plain"];
+	n4[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>env</b></td></tr><tr><td><font face="Courier New, Courier, monospace">env</font></td></tr></table>>,shape="plain"];
+	n3[label=<<table border="0" cellborder="1" cellspacing="0"><tr><td><b>finalize</b></td></tr><tr><td>This is the final step</td></tr><tr><td><font face="Courier New, Courier, monospace">echo hello</font></td></tr></table>>,shape="plain"];
+	n19[label="1.txt",shape="oval"];
+	n21[label="files.txt",shape="oval"];
+	n22[label="files1.txt",shape="oval"];
+	n18[color="red",label="in",shape="septagon"];
+	n20[label="in.txt",shape="oval"];
+	n14->n11;
+	n13->n12;
+	n17->n15;
+	n16->n21;
+	n16->n22;
+	n16->n17;
+	n16->n15;
+	n16->n2;
+	n7->n5;
+	n7->n19;
+	n6->n5;
+	n6->n7;
+	n10->n8;
+	n10->n19;
+	n9->n8;
+	n9->n10;
+	n19->n2;
+	n18->n1;
+	n20->n16;
+	n20->n17;
+	n12->n11;
+	n15->n5;
+	n15->n8;
+	n8->n3;
 	
 }

@@ -31,6 +31,11 @@ type File struct {
 
 func (f File) GetState() (string, error) {
 	f.Analyze()
+	if !f.Exists {
+		return state.FileState{
+			Exists: f.Exists,
+		}.Serialize()
+	}
 	if f.IsDir {
 		files, err := f.getDirList()
 		if err != nil {
@@ -138,6 +143,9 @@ func (f File) Changed(s stateStorage.State, p *Pipeline) bool {
 		if f.Exists != oldFS.Exists {
 			return true
 		}
+		if !f.Exists {
+			return false
+		}
 		if f.Analyzed && f.IsDir {
 			return true
 		}
@@ -157,6 +165,9 @@ func (f File) Changed(s stateStorage.State, p *Pipeline) bool {
 		oldDS := oldState.(state.DirState)
 		if f.Exists != oldDS.Exists {
 			return true
+		}
+		if !f.Exists {
+			return false
 		}
 		if f.Analyzed && !f.IsDir {
 			return true
@@ -214,10 +225,13 @@ func (f File) GetFullName() string {
 	return DotFilePrefix + f.Name
 }
 
-func (f File) Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[string]dot.Node, conf VisualizeConf) {
+func (f File) Visualize(ctx *dot.Graph, p *Pipeline, fileMap *map[string]*File, m *map[string]dot.Node, conf VisualizeConf) {
 	if f.Analyzed && f.IsDir {
 		(*m)[f.GetFullName()] = ctx.Node(DotFilePrefix+f.Name).Attr("shape", DirShape).Label(f.Name)
 	} else {
 		(*m)[f.GetFullName()] = ctx.Node(DotFilePrefix+f.Name).Attr("shape", FileShape).Label(f.Name)
+	}
+	if conf.Check && f.Changed(p.State, p) {
+		(*m)[f.GetFullName()].Attr("color", utils.DotChangedColor)
 	}
 }

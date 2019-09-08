@@ -6,8 +6,8 @@ import (
 )
 
 type DirState struct {
-	Exists   bool                 `json:"exists,omitempty"`
-	Files    []string             `json:"files,omitempty"`
+	Exists   bool        `json:"exists,omitempty"`
+	Files    []string    `json:"files,omitempty"`
 	ModTimes []time.Time `json:"mod-times,omitempty"`
 	Md5s     []string    `json:"md5s,omitempty"`
 }
