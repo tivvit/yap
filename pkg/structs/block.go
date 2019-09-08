@@ -201,7 +201,7 @@ func (b Block) Changed(state stateStorage.State, p *Pipeline) bool {
 		return true
 	}
 	// json should have persistent ordering of keys in json
-	storedState := state.Get(b.Name)
+	storedState := state.Get(b.FullName)
 	if storedState != currentState {
 		log.Printf("%s state changed", b.Name)
 		return true

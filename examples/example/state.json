@@ -1,4 +1,5 @@
 {
+	"/env": "{\"checkCmd\":\"\",\"env\":\"TEST=1\",\"exec\":\"env\"}",
 	"/test-again/long-eval": "b026324c6904b2a9cb4b88d6d61c81d1",
 	"/test/long-eval": "b026324c6904b2a9cb4b88d6d61c81d1",
 	"1.txt": "{\"exists\":true,\"mod-time\":\"2019-07-21T21:21:33.983878994+02:00\",\"md5\":\"c4ca4238a0b923820dcc509a6f75849b\"}",
