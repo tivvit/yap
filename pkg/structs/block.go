@@ -29,10 +29,11 @@ type IncludeBlock struct {
 }
 
 const (
-	dotBlockPrefix = "block:"
-	StateNamePrefix = "__internal:"
-	StateNameExec = "exec"
-	StateNameEnv = "env"
+	dotBlockPrefix    = "block:"
+	StateNameExec     = "exec"
+	StateNameEnv      = "env"
+	StateNameCheckCmd = "checkCmd"
+	StateNameCheck    = "check"
 )
 
 func NewBlockFromMap(name string, m map[string]interface{}) *Block {
@@ -98,8 +99,9 @@ func (b Block) Run(state stateStorage.State, p *Pipeline) {
 	}
 
 	initState := b.GetDepsState(p)
-
 	utils.GenericRunEnv(b.Exec, b.Env)
+
+	// update state after run
 	s, err := b.GetState()
 	if err != nil {
 		log.Println(err)
@@ -113,20 +115,15 @@ func (b Block) Run(state stateStorage.State, p *Pipeline) {
 			log.Println(err)
 			continue
 		}
+		// todo with prefix?
 		state.Set(f, c)
 	}
 
-	js, err := json.Marshal(initState)
-	if err != nil {
-		log.Println("json marshall error:", err)
-		return
-	}
-
-	state.Set(utils.DepsPrefix+b.FullName, string(js))
+	state.Set(utils.DepsPrefix+b.FullName, initState)
 }
 
-func (b Block) GetDepsState(p *Pipeline) map[string]string {
-	initState := make(map[string]string)
+func (b Block) GetDepsState(p *Pipeline) string {
+	depsState := make(map[string]string)
 	for _, f := range b.In {
 		var st string
 		var err error
@@ -140,7 +137,7 @@ func (b Block) GetDepsState(p *Pipeline) map[string]string {
 			log.Println(err)
 			st = ""
 		}
-		initState[f] = st
+		depsState[f] = st
 	}
 	for _, d := range b.DepsFull {
 		var st string
@@ -155,61 +152,81 @@ func (b Block) GetDepsState(p *Pipeline) map[string]string {
 			log.Println(err)
 			st = ""
 		}
-		initState[d] = st
+		depsState[d] = st
 	}
-	// add command to state
-	initState[StateNamePrefix+StateNameExec] = strings.Join(b.Exec, ",")
-	initState[StateNamePrefix+StateNameEnv] = strings.Join(b.Env, ",")
-	return initState
+	js, err := json.Marshal(depsState)
+	if err != nil {
+		log.Println("json marshall error:", err)
+		return "{}"
+	}
+	return string(js)
 }
 
 func (b Block) GetState() (string, error) {
-	// todo this should be used for checking external deps (i.e. download over internet)
-	if len(b.Check) == 0 {
+	state := map[string]string{}
+	// add command to state
+	state[StateNameExec] = strings.Join(b.Exec, ",")
+	// add env to state
+	state[StateNameEnv] = strings.Join(b.Env, ",")
+	// add check command to state
+	state[StateNameCheckCmd] = strings.Join(b.Check, ",")
+
+	if len(b.Check) > 0 {
+		// this should be used for checking external deps (i.e. download over internet)
+		log.Printf("Explicit state check `%s`\n", strings.Join(b.Check, " "))
+		out := utils.GenericRun(b.Check)
+		cs, err := utils.Md5Checksum(strings.NewReader(out))
+		if err != nil {
+			log.Println(err)
+			state[StateNameCheck] = "ERROR"
+		}
+		state[StateNameCheck] = cs
+	} else {
 		// no explicit state check
-		// todo get state with deps? - probably not - this may serve as interface for others to get state of this block
-		return "", nil
+		// todo support mutable blocks
 	}
-	log.Printf("Explicit state check `%s`\n", strings.Join(b.Check, " "))
-	out := utils.GenericRun(b.Check)
-	cs, err := utils.Md5Checksum(strings.NewReader(out))
+
+	js, err := json.Marshal(state)
 	if err != nil {
-		return "EMPTY", err
+		log.Println("json marshall error:", err)
+		return "{}", err
 	}
-	return cs, nil
+	return string(js), nil
 }
 
 func (b Block) Changed(state stateStorage.State, p *Pipeline) bool {
-	// todo review - should be based on deps state
-	newState, err := b.GetState()
+	currentState, err := b.GetState()
 	if err != nil {
+		log.Printf("Error while checking state for %s\n", b.FullName)
 		return true
 	}
-	for _, d := range b.DepsFull {
-		if v, ok := p.Map[d]; ok {
-			v.Changed(state, p)
-		} else if v, ok := p.MapFiles[d]; ok {
-			v.Changed(state, p)
-		}
+	// json should have persistent ordering of keys in json
+	storedState := state.Get(b.Name)
+	if storedState != currentState {
+		log.Printf("%s state changed", b.Name)
+		return true
 	}
-	currentState := state.Get(b.Name)
-	if currentState != "" && newState == currentState {
-		log.Printf("phase %s will not run - state did not change", b.Name)
-		return false
+
+	// check deps
+	depsState := b.GetDepsState(p)
+	storedDepsState := state.Get(utils.DepsPrefix + b.FullName)
+	if depsState != storedDepsState {
+		return true
 	}
-	return true
+	log.Printf("not running %s - state did not change", b.Name)
+	return false
 }
 
 func (b Block) GetDepsFull() []string {
 	ret := make([]string, len(b.DepsFull))
 	copy(ret, b.DepsFull)
 	for _, f := range b.In {
-		ret = append(ret, DotFilePrefix + f)
+		ret = append(ret, DotFilePrefix+f)
 	}
 	return ret
 }
 
-func (b Block) Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[string]dot.Node , conf VisualizeConf) {
+func (b Block) Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[string]dot.Node, conf VisualizeConf) {
 	nameFmt := "<tr><td><b>%s</b></td></tr>"
 	name := fmt.Sprintf(nameFmt, b.Name)
 	cmdFmt := `<tr><td><font face="Courier New, Courier, monospace">%s</font></td></tr>`
@@ -221,7 +238,7 @@ func (b Block) Visualize(ctx *dot.Graph, fileMap *map[string]*File, m *map[strin
 	}
 	tableFmt := `<table border="0" cellborder="1" cellspacing="0">%s%s%s</table>`
 	label := fmt.Sprintf(fmt.Sprintf(tableFmt, name, desc, cmd))
-	n := ctx.Node(dotBlockPrefix + b.FullName).Attr("shape", "plain")
+	n := ctx.Node(dotBlockPrefix+b.FullName).Attr("shape", "plain")
 	n.Attr("label", dot.HTML(label))
 	(*m)[b.FullName] = n
 
