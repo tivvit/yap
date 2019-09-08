@@ -97,8 +97,36 @@ func (b Block) Run(state stateStorage.State, p *Pipeline) {
 		return
 	}
 
-	initState := make(map[string]string)
+	initState := b.GetDepsState(p)
 
+	utils.GenericRunEnv(b.Exec, b.Env)
+	s, err := b.GetState()
+	if err != nil {
+		log.Println(err)
+	} else {
+		state.Set(b.FullName, s)
+	}
+
+	for _, f := range b.Out {
+		c, err := p.MapFiles[f].GetState()
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		state.Set(f, c)
+	}
+
+	js, err := json.Marshal(initState)
+	if err != nil {
+		log.Println("json marshall error:", err)
+		return
+	}
+
+	state.Set(utils.DepsPrefix+b.FullName, string(js))
+}
+
+func (b Block) GetDepsState(p *Pipeline) map[string]string {
+	initState := make(map[string]string)
 	for _, f := range b.In {
 		var st string
 		var err error
@@ -130,33 +158,9 @@ func (b Block) Run(state stateStorage.State, p *Pipeline) {
 		initState[d] = st
 	}
 	// add command to state
-	initState[StateNamePrefix + StateNameExec] = strings.Join(b.Exec, ",")
-	initState[StateNamePrefix + StateNameEnv] = strings.Join(b.Env, ",")
-
-	utils.GenericRunEnv(b.Exec, b.Env)
-	s, err := b.GetState()
-	if err != nil {
-		log.Println(err)
-	} else {
-		state.Set(b.FullName, s)
-	}
-
-	for _, f := range b.Out {
-		c, err := p.MapFiles[f].GetState()
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-		state.Set(f, c)
-	}
-
-	js, err := json.Marshal(initState)
-	if err != nil {
-		log.Println("json marshall error:", err)
-		return
-	}
-
-	state.Set(utils.DepsPrefix+b.FullName, string(js))
+	initState[StateNamePrefix+StateNameExec] = strings.Join(b.Exec, ",")
+	initState[StateNamePrefix+StateNameEnv] = strings.Join(b.Env, ",")
+	return initState
 }
 
 func (b Block) GetState() (string, error) {
@@ -166,7 +170,7 @@ func (b Block) GetState() (string, error) {
 		// todo get state with deps? - probably not - this may serve as interface for others to get state of this block
 		return "", nil
 	}
-	log.Println("Explicit state check `$s`", strings.Join(b.Check, " "))
+	log.Printf("Explicit state check `%s`\n", strings.Join(b.Check, " "))
 	out := utils.GenericRun(b.Check)
 	cs, err := utils.Md5Checksum(strings.NewReader(out))
 	if err != nil {
