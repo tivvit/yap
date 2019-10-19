@@ -82,10 +82,12 @@ func createGraph(stages map[string]structs.Graphable, inverse bool) (*graph.Muta
 			nn, ok := m[n]
 			if !ok {
 				log.Printf("Elem %s not present in map", n)
+				continue
 			}
 			dd, ok := m[d]
 			if !ok {
 				log.Printf("Elem %s not present in map", d)
+				continue
 			}
 			if inverse {
 				g.Add(nn, dd)

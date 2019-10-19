@@ -42,10 +42,10 @@ func (f File) GetState() (string, error) {
 			return "", err
 		}
 		return state.DirState{
-			Exists: f.Exists,
-			Files: files,
+			Exists:   f.Exists,
+			Files:    files,
 			ModTimes: modTimes(files),
-			Md5s: md5s(files),
+			Md5s:     md5s(files),
 		}.Serialize()
 	} else {
 		md5, err := f.getFileMd5()
@@ -53,9 +53,9 @@ func (f File) GetState() (string, error) {
 			return "", err
 		}
 		return state.FileState{
-			Exists: f.Exists,
+			Exists:  f.Exists,
 			ModTime: f.ModTime,
-			Md5: md5,
+			Md5:     md5,
 		}.Serialize()
 	}
 }
@@ -112,26 +112,29 @@ func md5s(files []string) []string {
 	return md5s
 }
 
-func loadState(s string) (interface{}, error) {
-	// we do not know if stored type is dir or file
-	fs := state.FileState{}
-	err := fs.Deserialize(s)
-	if err != nil {
-		// it is not fileState = trying DirState
+func (f File) loadState(s string) (interface{}, error) {
+	if f.IsDir {
+		ds := state.DirState{}
+		err := ds.Deserialize(s)
+		if err != nil {
+			return nil, err
+		}
+		return ds, nil
 	} else {
-		return fs, nil
+		fs := state.FileState{}
+		err := fs.Deserialize(s)
+		if err != nil {
+			return nil, err
+		} else {
+			return fs, nil
+		}
 	}
-	ds := state.DirState{}
-	err = ds.Deserialize(s)
-	if err != nil {
-		return nil, err
-	}
-	return ds, nil
 }
 
 func (f File) Changed(s stateStorage.State, p *Pipeline) bool {
 	// todo this should compare with some exact state not with my state
-	oldState, err := loadState(s.Get(f.GetFullName()))
+	oldState, err := f.loadState(s.Get(f.GetFullName()))
+	log.Println("checking ", f.Name)
 	if err != nil {
 		// not possible to read state = recompute
 		return true
@@ -139,6 +142,7 @@ func (f File) Changed(s stateStorage.State, p *Pipeline) bool {
 	f.Analyze()
 	switch oldState.(type) {
 	case state.FileState:
+		log.Println("checking file", f.Name, oldState)
 		oldFS := oldState.(state.FileState)
 		if f.Exists != oldFS.Exists {
 			return true
@@ -162,6 +166,7 @@ func (f File) Changed(s stateStorage.State, p *Pipeline) bool {
 		}
 		return false
 	case state.DirState:
+		log.Println("checking dir", f.Name)
 		oldDS := oldState.(state.DirState)
 		if f.Exists != oldDS.Exists {
 			return true
@@ -190,6 +195,7 @@ func (f File) Changed(s stateStorage.State, p *Pipeline) bool {
 		}
 		return false
 	default:
+		log.Println("checking default", f.Name)
 		return true
 	}
 }
@@ -232,6 +238,7 @@ func (f File) Visualize(ctx *dot.Graph, p *Pipeline, fileMap *map[string]*File, 
 		(*m)[f.GetFullName()] = ctx.Node(DotFilePrefix+f.Name).Attr("shape", FileShape).Label(f.Name)
 	}
 	if conf.Check && f.Changed(p.State, p) {
+		log.Println("  changed")
 		(*m)[f.GetFullName()].Attr("color", utils.DotChangedColor)
 	}
 }
