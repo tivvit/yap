@@ -114,17 +114,17 @@ func Visualize(p *structs.Pipeline, name string, conf structs.VisualizeConf) {
 }
 
 func legend(p *structs.Pipeline, di *dot.Graph, conf structs.VisualizeConf) {
-	legend := di.Subgraph(dotLegendPrefix + "Legend", dot.ClusterOption{})
+	legend := di.Subgraph(dotLegendPrefix+"Legend", dot.ClusterOption{})
 	legend.Attr("label", "Legend")
-	legend.Node(dotLegendPrefix + "File").Attr("shape", structs.FileShape).Label("File")
-	legend.Node(dotLegendPrefix + "Directory").Attr("shape", structs.DirShape).Label("Directory")
+	legend.Node(dotLegendPrefix+"File").Attr("shape", structs.FileShape).Label("File")
+	legend.Node(dotLegendPrefix+"Directory").Attr("shape", structs.DirShape).Label("Directory")
 	pipeline := legend
 	if conf.PipelineBoxes {
-		pipeline = legend.Subgraph(dotLegendPrefix + "PIPELINE", dot.ClusterOption{})
+		pipeline = legend.Subgraph(dotLegendPrefix+"PIPELINE", dot.ClusterOption{})
 		pipeline.Attr("label", "PIPELINE")
 	}
 	if conf.PipelineNodes {
-		pipeline.Node(dotLegendPrefix + "Pipeline").Attr("shape", structs.PipelineShape).Label("Pipeline")
+		pipeline.Node(dotLegendPrefix+"Pipeline").Attr("shape", structs.PipelineShape).Label("Pipeline")
 	}
 	b := structs.Block{
 		Name:        "Block",
@@ -132,7 +132,7 @@ func legend(p *structs.Pipeline, di *dot.Graph, conf structs.VisualizeConf) {
 		Exec:        []string{"code", "-h"},
 	}
 	if conf.Check {
-		legend.Node(dotLegendPrefix + "Changed").Attr("shape", structs.FileShape).Label("Changed (file)").Attr("color", utils.DotChangedColor)
+		legend.Node(dotLegendPrefix+"Changed").Attr("shape", structs.FileShape).Label("Changed (file)").Attr("color", utils.DotChangedColor)
 	}
 	legendMap := map[string]dot.Node{}
 	// no checking in legend
