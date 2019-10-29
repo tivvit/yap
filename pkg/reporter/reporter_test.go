@@ -25,7 +25,7 @@ func TestMain(m *testing.M) {
 
 
 func TestStdoutReport(t *testing.T) {
-	r := NewReporter(structs.ReporterConf{
+	r := newReporter(structs.ReporterConf{
 		Storages: []structs.ReporterStorageConf{
 			structs.ReporterStorageConfStdout{},
 		},
@@ -45,7 +45,7 @@ func TestStdoutReport(t *testing.T) {
 
 func TestJsonReport(t *testing.T) {
 	fn := "report.json"
-	r := NewReporter(structs.ReporterConf{
+	r := newReporter(structs.ReporterConf{
 		Storages: []structs.ReporterStorageConf{
 			structs.ReporterStorageConfJson{
 				FileName: fn,
@@ -92,7 +92,7 @@ func TestJsonReport(t *testing.T) {
 func TestMultiReport(t *testing.T) {
 	fn := "report.json"
 	fn2 := "report_2.json"
-	r := NewReporter(structs.ReporterConf{
+	r := newReporter(structs.ReporterConf{
 		Storages: []structs.ReporterStorageConf{
 			structs.ReporterStorageConfJson{
 				FileName: "report.json",
@@ -116,3 +116,35 @@ func TestMultiReport(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestInstance(t *testing.T) {
+	instance = nil
+	_, err := GetInstance()
+	if err == nil {
+		t.Error("got uninitialized instance")
+	}
+	ri := newReporter(structs.ReporterConf{
+		Storages: []structs.ReporterStorageConf{
+			structs.ReporterStorageConfStdout{},
+		},
+	})
+	r, err := GetInstance()
+	if err != nil {
+		t.Error("error getting instance")
+	}
+	if r == nil {
+		t.Error("got nil instance")
+	}
+	if ri != r {
+		t.Error("instances differ")
+	}
+	ri2 := NewReporter(structs.ReporterConf{
+		Storages: []structs.ReporterStorageConf{
+			structs.ReporterStorageConfStdout{},
+		},
+	})
+	if ri2 != r {
+		t.Error("instances differ after second init")
+	}
+}
+

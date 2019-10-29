@@ -1,9 +1,14 @@
 package reporter
 
 import (
+	"errors"
 	"github.com/tivvit/yap/pkg/reporterStorage"
 	"github.com/tivvit/yap/pkg/structs"
 	"log"
+)
+
+var (
+	instance *reporter
 )
 
 type reporter struct {
@@ -16,8 +21,7 @@ func (r *reporter) Report(e *structs.Event) {
 	}
 }
 
-// todo singleton
-func NewReporter(rc structs.ReporterConf) *reporter {
+func newReporter(rc structs.ReporterConf) *reporter {
 	var storages []reporterStorage.ReporterStorage
 	for _, s := range rc.Storages {
 		switch s.(type) {
@@ -31,7 +35,23 @@ func NewReporter(rc structs.ReporterConf) *reporter {
 			log.Printf("Unknown reporter storage %T\n", s)
 		}
 	}
-	return &reporter{
+	instance =  &reporter{
 		storages: storages,
 	}
+	return instance
+}
+
+func NewReporter(rc structs.ReporterConf) *reporter {
+	if instance != nil {
+		log.Println("Reporter instance already exists")
+		return instance
+	}
+	return newReporter(rc)
+}
+
+func GetInstance() (*reporter, error) {
+	if instance == nil {
+		return nil, errors.New("reporter was not instantiated")
+	}
+	return instance, nil
 }
