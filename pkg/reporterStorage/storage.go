@@ -1,9 +1,9 @@
 package reporterStorage
 
 import (
-	"github.com/tivvit/yap/pkg/structs"
+	"github.com/tivvit/yap/event"
 )
 
 type ReporterStorage interface {
-	Add(e structs.Event)
+	Add(e event.Event)
 }

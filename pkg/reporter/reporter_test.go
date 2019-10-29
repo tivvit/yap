@@ -2,7 +2,8 @@ package reporter
 
 import (
 	"encoding/json"
-	"github.com/tivvit/yap/pkg/structs"
+	"github.com/tivvit/yap/event"
+	"github.com/tivvit/yap/pkg/conf"
 	"io/ioutil"
 	"log"
 	"os"
@@ -25,14 +26,14 @@ func TestMain(m *testing.M) {
 
 
 func TestStdoutReport(t *testing.T) {
-	r := newReporter(structs.ReporterConf{
-		Storages: []structs.ReporterStorageConf{
-			structs.ReporterStorageConfStdout{},
+	r := newReporter(conf.ReporterConf{
+		Storages: []conf.ReporterStorageConf{
+			conf.ReporterStorageConfStdout{},
 		},
 	})
 	read, w, _ := os.Pipe()
 	log.SetOutput(w)
-	e := structs.NewEvent()
+	e := event.NewEvent()
 	e.Message = "Hi"
 	r.Report(e)
 	w.Close()
@@ -45,14 +46,14 @@ func TestStdoutReport(t *testing.T) {
 
 func TestJsonReport(t *testing.T) {
 	fn := "report.json"
-	r := newReporter(structs.ReporterConf{
-		Storages: []structs.ReporterStorageConf{
-			structs.ReporterStorageConfJson{
+	r := newReporter(conf.ReporterConf{
+		Storages: []conf.ReporterStorageConf{
+			conf.ReporterStorageConfJson{
 				FileName: fn,
 			},
 		},
 	})
-	e := structs.NewEvent()
+	e := event.NewEvent()
 	e.Message = "Hi"
 	r.Report(e)
 	f, _ := os.Open(fn)
@@ -61,7 +62,7 @@ func TestJsonReport(t *testing.T) {
 		t.Fail()
 	}
 
-	e = structs.NewEvent()
+	e = event.NewEvent()
 	e.Message = "Hi 2"
 	tm := time.Now()
 	e.EndTime = &tm
@@ -82,7 +83,7 @@ func TestJsonReport(t *testing.T) {
 	if !strings.Contains(string(b), `"tags": [`) {
 		t.Error("tags")
 	}
-	var d []structs.Event
+	var d []event.Event
 	err := json.Unmarshal(b, &d)
 	if err != nil {
 		t.Error("json parse")
@@ -92,17 +93,17 @@ func TestJsonReport(t *testing.T) {
 func TestMultiReport(t *testing.T) {
 	fn := "report.json"
 	fn2 := "report_2.json"
-	r := newReporter(structs.ReporterConf{
-		Storages: []structs.ReporterStorageConf{
-			structs.ReporterStorageConfJson{
+	r := newReporter(conf.ReporterConf{
+		Storages: []conf.ReporterStorageConf{
+			conf.ReporterStorageConfJson{
 				FileName: "report.json",
 			},
-			structs.ReporterStorageConfJson{
+			conf.ReporterStorageConfJson{
 				FileName: "report_2.json",
 			},
 		},
 	})
-	e := structs.NewEvent()
+	e := event.NewEvent()
 	e.Message = "Hi"
 	r.Report(e)
 	f, _ := os.Open(fn)
@@ -123,9 +124,9 @@ func TestInstance(t *testing.T) {
 	if err == nil {
 		t.Error("got uninitialized instance")
 	}
-	ri := newReporter(structs.ReporterConf{
-		Storages: []structs.ReporterStorageConf{
-			structs.ReporterStorageConfStdout{},
+	ri := newReporter(conf.ReporterConf{
+		Storages: []conf.ReporterStorageConf{
+			conf.ReporterStorageConfStdout{},
 		},
 	})
 	r, err := GetInstance()
@@ -138,9 +139,9 @@ func TestInstance(t *testing.T) {
 	if ri != r {
 		t.Error("instances differ")
 	}
-	ri2 := NewReporter(structs.ReporterConf{
-		Storages: []structs.ReporterStorageConf{
-			structs.ReporterStorageConfStdout{},
+	ri2 := NewReporter(conf.ReporterConf{
+		Storages: []conf.ReporterStorageConf{
+			conf.ReporterStorageConfStdout{},
 		},
 	})
 	if ri2 != r {

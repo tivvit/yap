@@ -2,8 +2,9 @@ package reporter
 
 import (
 	"errors"
+	"github.com/tivvit/yap/event"
+	"github.com/tivvit/yap/pkg/conf"
 	"github.com/tivvit/yap/pkg/reporterStorage"
-	"github.com/tivvit/yap/pkg/structs"
 	"log"
 )
 
@@ -15,21 +16,21 @@ type reporter struct {
 	storages []reporterStorage.ReporterStorage
 }
 
-func (r *reporter) Report(e *structs.Event) {
+func (r *reporter) Report(e *event.Event) {
 	for _, s := range r.storages {
 		s.Add(*e)
 	}
 }
 
-func newReporter(rc structs.ReporterConf) *reporter {
+func newReporter(rc conf.ReporterConf) *reporter {
 	var storages []reporterStorage.ReporterStorage
 	for _, s := range rc.Storages {
 		switch s.(type) {
-		case structs.ReporterStorageConfJson:
-			rscj := s.(structs.ReporterStorageConfJson)
+		case conf.ReporterStorageConfJson:
+			rscj := s.(conf.ReporterStorageConfJson)
 			// todo going to override (report?)
 			storages = append(storages, reporterStorage.NewJsonStorage(rscj.FileName))
-		case structs.ReporterStorageConfStdout:
+		case conf.ReporterStorageConfStdout:
 			storages = append(storages, reporterStorage.NewStdoutStorage())
 		default:
 			log.Printf("Unknown reporter storage %T\n", s)
@@ -41,7 +42,7 @@ func newReporter(rc structs.ReporterConf) *reporter {
 	return instance
 }
 
-func NewReporter(rc structs.ReporterConf) *reporter {
+func NewReporter(rc conf.ReporterConf) *reporter {
 	if instance != nil {
 		log.Println("Reporter instance already exists")
 		return instance

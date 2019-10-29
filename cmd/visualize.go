@@ -4,8 +4,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tivvit/yap/cmdFlags"
 	"github.com/tivvit/yap/pkg"
+	conf2 "github.com/tivvit/yap/pkg/conf"
 	"github.com/tivvit/yap/pkg/stateStorage"
-	"github.com/tivvit/yap/pkg/structs"
 	"log"
 )
 
@@ -48,7 +48,7 @@ var visualizeCmd = &cobra.Command{
 			log.Fatalln(err)
 		}
 
-		conf := structs.VisualizeConf{
+		conf := conf2.VisualizeConf{
 			OutputFile: o,
 			OutputImage: oi,
 			OutputConnections: !oc,

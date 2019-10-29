@@ -2,19 +2,19 @@ package reporterStorage
 
 import (
 	"encoding/json"
+	"github.com/tivvit/yap/event"
 	"github.com/tivvit/yap/pkg/storage"
-	"github.com/tivvit/yap/pkg/structs"
 	"log"
 )
 
-type events []structs.Event
+type events []event.Event
 
 type jsonStorage struct {
 	storage storage.Storage
 	events  events
 }
 
-func (js *jsonStorage) Add(e structs.Event) {
+func (js *jsonStorage) Add(e event.Event) {
 	js.events = append(js.events, e)
 	defer js.write()
 }

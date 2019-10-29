@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/emicklei/dot"
+	"github.com/tivvit/yap/pkg/conf"
 	"github.com/tivvit/yap/pkg/stateStorage"
 	"github.com/tivvit/yap/pkg/utils"
 	"log"
@@ -295,7 +296,7 @@ func (p Pipeline) GetGraphable() map[string]Graphable {
 //	return nodesMap, deps
 //}
 
-func (p Pipeline) Visualize(ctx *dot.Graph, pi *Pipeline, fileMap *map[string]*File, m *map[string]dot.Node, conf VisualizeConf) {
+func (p Pipeline) Visualize(ctx *dot.Graph, pi *Pipeline, fileMap *map[string]*File, m *map[string]dot.Node, conf conf.VisualizeConf) {
 	splitName := strings.Split(p.FullName, "/")
 	name := splitName[len(splitName)-1]
 	//log.Println("name is", name, "for", p.FullName)

@@ -38,6 +38,7 @@ func NewJsonStorage() *jsonStorage {
 	f := "state.json"
 	js := jsonStorage{
 		storage: storage.NewFileStorage(f),
+		data: map[string]string{},
 	}
 	b := js.storage.Read()
 	if len(b) == 0 {

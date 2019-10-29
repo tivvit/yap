@@ -2,13 +2,13 @@ package reporterStorage
 
 import (
 	"encoding/json"
-	"github.com/tivvit/yap/pkg/structs"
+	"github.com/tivvit/yap/event"
 	"log"
 )
 
 type stdoutStorage struct{}
 
-func (js *stdoutStorage) Add(e structs.Event) {
+func (js *stdoutStorage) Add(e event.Event) {
 	j, err := json.MarshalIndent(e, "", "\t")
 	if err != nil {
 		log.Fatalln(err)

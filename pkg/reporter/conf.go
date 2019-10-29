@@ -1,7 +1,9 @@
 package reporter
 
-import "github.com/tivvit/yap/pkg/structs"
+import (
+	"github.com/tivvit/yap/pkg/conf"
+)
 
-func ParseConf() []structs.ReporterConf  {
-	return []structs.ReporterConf{}
+func ParseConf() []conf.ReporterConf {
+	return []conf.ReporterConf{}
 }

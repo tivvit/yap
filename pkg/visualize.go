@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"github.com/emicklei/dot"
+	"github.com/tivvit/yap/pkg/conf"
 	"github.com/tivvit/yap/pkg/pipeline"
 	"github.com/tivvit/yap/pkg/structs"
 	"github.com/tivvit/yap/pkg/utils"
@@ -14,7 +15,7 @@ const (
 	dotLegendPrefix = "legend:"
 )
 
-func Visualize(p *structs.Pipeline, name string, conf structs.VisualizeConf) {
+func Visualize(p *structs.Pipeline, name string, conf conf.VisualizeConf) {
 	sm := pipeline.Filter(name, p.GetGraphable())
 	di := dot.NewGraph(dot.Directed)
 	nodeMap := map[string]dot.Node{}
@@ -113,7 +114,7 @@ func Visualize(p *structs.Pipeline, name string, conf structs.VisualizeConf) {
 	//p.tryDot()
 }
 
-func legend(p *structs.Pipeline, di *dot.Graph, conf structs.VisualizeConf) {
+func legend(p *structs.Pipeline, di *dot.Graph, conf conf.VisualizeConf) {
 	legend := di.Subgraph(dotLegendPrefix+"Legend", dot.ClusterOption{})
 	legend.Attr("label", "Legend")
 	legend.Node(dotLegendPrefix+"File").Attr("shape", structs.FileShape).Label("File")
@@ -140,7 +141,7 @@ func legend(p *structs.Pipeline, di *dot.Graph, conf structs.VisualizeConf) {
 	b.Visualize(legend, p, nil, &legendMap, conf)
 }
 
-func tryDot(conf structs.VisualizeConf) {
+func tryDot(conf conf.VisualizeConf) {
 	c := exec.Command("dot", []string{"-T", "png", conf.OutputFile, "-o", conf.OutputImage}...)
 	err := c.Run()
 	if err != nil {
