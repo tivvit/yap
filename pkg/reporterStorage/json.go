@@ -2,17 +2,16 @@ package reporterStorage
 
 import (
 	"encoding/json"
+	"github.com/tivvit/yap/pkg/storage"
 	"github.com/tivvit/yap/pkg/structs"
-	"io/ioutil"
 	"log"
-	"os"
 )
 
 type events []structs.Event
 
 type jsonStorage struct {
-	fileName string
-	events events
+	storage storage.Storage
+	events  events
 }
 
 func (js *jsonStorage) Add(e structs.Event) {
@@ -25,27 +24,16 @@ func (js jsonStorage) write() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	err = ioutil.WriteFile(js.fileName, b, 0644)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	js.storage.Write(b)
 }
 
 func NewJsonStorage(fileName string) *jsonStorage {
-	js := jsonStorage{}
-	js.fileName = fileName
-	_, err := os.Stat(js.fileName)
-	if os.IsNotExist(err) {
-		js.write()
+	js := jsonStorage{
+		storage: storage.NewFileStorage(fileName),
 	}
-	b, err := ioutil.ReadFile(js.fileName)
-	if err != nil {
-		log.Println(err)
+	b := js.storage.Read()
+	if len(b) == 0 {
 		return &js
-	}
-	err = json.Unmarshal(b, &js.events)
-	if err != nil {
-		log.Fatalln(err)
 	}
 	return &js
 }

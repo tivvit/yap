@@ -4,6 +4,6 @@ import (
 	"github.com/tivvit/yap/pkg/structs"
 )
 
-type Storage interface {
+type ReporterStorage interface {
 	Add(e structs.Event)
 }

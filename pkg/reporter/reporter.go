@@ -3,21 +3,35 @@ package reporter
 import (
 	"github.com/tivvit/yap/pkg/reporterStorage"
 	"github.com/tivvit/yap/pkg/structs"
+	"log"
 )
 
 type reporter struct {
-	storage reporterStorage.Storage
+	storages []reporterStorage.ReporterStorage
 }
 
-func (r *reporter) Report(e structs.Event) {
-	r.storage.Add(e)
+func (r *reporter) Report(e *structs.Event) {
+	for _, s := range r.storages {
+		s.Add(*e)
+	}
 }
 
 // todo singleton
-func NewReporter() *reporter {
-	// todo determine storage based on conf
-	s := reporterStorage.NewStdoutStorage()
+func NewReporter(rc structs.ReporterConf) *reporter {
+	var storages []reporterStorage.ReporterStorage
+	for _, s := range rc.Storages {
+		switch s.(type) {
+		case structs.ReporterStorageConfJson:
+			rscj := s.(structs.ReporterStorageConfJson)
+			// todo going to override (report?)
+			storages = append(storages, reporterStorage.NewJsonStorage(rscj.FileName))
+		case structs.ReporterStorageConfStdout:
+			storages = append(storages, reporterStorage.NewStdoutStorage())
+		default:
+			log.Printf("Unknown reporter storage %T\n", s)
+		}
+	}
 	return &reporter{
-		storage: s,
+		storages: storages,
 	}
 }
