@@ -24,7 +24,7 @@ func Visualize(p *structs.Pipeline, name string, conf structs.VisualizeConf) {
 		case structs.Visualizable:
 			v.(structs.Visualizable).Visualize(di, p, &fileMap, &nodeMap, conf)
 		default:
-			log.Println("Unexpected type %T which is not Visualizable", v)
+			log.Printf("Unexpected type %T which is not Visualizable\n", v)
 		}
 	}
 	for n := range fileMap {
