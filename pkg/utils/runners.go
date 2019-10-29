@@ -2,7 +2,7 @@ package utils
 
 import (
 	"bytes"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"os/exec"
 )

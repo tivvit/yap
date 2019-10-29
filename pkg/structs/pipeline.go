@@ -6,7 +6,7 @@ import (
 	"github.com/emicklei/dot"
 	"github.com/tivvit/yap/pkg/stateStorage"
 	"github.com/tivvit/yap/pkg/utils"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"strings"
 )
 

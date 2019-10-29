@@ -8,7 +8,7 @@ import (
 	yapDot "github.com/tivvit/yap/pkg/dot"
 	"github.com/tivvit/yap/pkg/stateStorage"
 	"github.com/tivvit/yap/pkg/utils"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"strings"
 )
 

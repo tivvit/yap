@@ -2,18 +2,19 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
-	"github.com/tivvit/yap/pkg"
-	"log"
 	"regexp"
 	"sort"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+	"github.com/tivvit/yap/pkg"
 )
 
 var listCmd = &cobra.Command{
-	Use:   "list [name-regex]",
+	Use:     "list [name-regex]",
 	Aliases: []string{"l"},
-	Short: "list",
-	Long:  ``,
+	Short:   "list",
+	Long:    ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		p := pkg.LoadCmd(cmd)
 

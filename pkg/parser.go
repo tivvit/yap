@@ -4,7 +4,7 @@ import (
 	"github.com/tivvit/yap/pkg/stateStorage"
 	"github.com/tivvit/yap/pkg/structs"
 	"github.com/tivvit/yap/pkg/utils"
-	"log"
+	log "github.com/sirupsen/logrus"
 )
 
 func parsePipelinev1(raw *structs.PipelineRaw) *structs.Pipeline {

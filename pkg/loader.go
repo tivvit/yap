@@ -8,7 +8,7 @@ import (
 	"github.com/tivvit/yap/pkg/utils"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"os"
 )
 

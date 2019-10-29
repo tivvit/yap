@@ -6,7 +6,7 @@ import (
 	"github.com/tivvit/yap/pkg"
 	"github.com/tivvit/yap/pkg/stateStorage"
 	"github.com/tivvit/yap/pkg/structs"
-	"log"
+	log "github.com/sirupsen/logrus"
 )
 
 var visualizeCmd = &cobra.Command{

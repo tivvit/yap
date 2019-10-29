@@ -6,7 +6,7 @@ import (
 	"github.com/tivvit/yap/pkg"
 	"github.com/tivvit/yap/pkg/pipeline"
 	"github.com/tivvit/yap/pkg/stateStorage"
-	"log"
+	log "github.com/sirupsen/logrus"
 )
 
 
