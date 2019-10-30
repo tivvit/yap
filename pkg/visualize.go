@@ -5,7 +5,7 @@ import (
 	"github.com/tivvit/yap/pkg/pipeline"
 	"github.com/tivvit/yap/pkg/structs"
 	"github.com/tivvit/yap/pkg/utils"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"os/exec"
 )

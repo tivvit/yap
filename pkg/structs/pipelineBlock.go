@@ -3,7 +3,7 @@ package structs
 import (
 	"github.com/emicklei/dot"
 	"github.com/tivvit/yap/pkg/stateStorage"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"strings"
 )
 
