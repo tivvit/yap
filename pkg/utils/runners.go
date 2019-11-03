@@ -2,9 +2,13 @@ package utils
 
 import (
 	"bytes"
+	"github.com/tivvit/yap/pkg/reporter"
+	"github.com/tivvit/yap/pkg/reporter/event"
+	"github.com/tivvit/yap/pkg/tracker"
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 func GenericRun(cmd []string) string {
@@ -25,7 +29,20 @@ func run(cmd []string, env []string) string {
 	c.Env = env
 	var out bytes.Buffer
 	c.Stdout = &out
+	t := tracker.NewTracker()
+	t.Start("run")
 	err := c.Run()
+	e := event.NewRunEvent("Finished")
+	d, st, err := t.Stop("run")
+	if err != nil {
+		log.Println("Tracker for run failed")
+	} else {
+		e.StartTime = &st
+		e.Duration = &d
+	}
+	e.Command = strings.Join(cmd, " ")
+	e.Env = strings.Join(env, "\n")
+	reporter.Report(e)
 	if err != nil {
 		log.Fatal(err)
 	}

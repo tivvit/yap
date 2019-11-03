@@ -10,7 +10,7 @@ func TestTrack(t *testing.T) {
 	tr.Start("a")
 	d := 5 * time.Millisecond
 	time.Sleep(d)
-	md, err := tr.Stop("a")
+	md, _, err := tr.Stop("a")
 	if err != nil {
 		t.Fail()
 	}
@@ -27,12 +27,12 @@ func TestMultiTrack(t *testing.T) {
 	tr.Start("a")
 	tr.Start("b")
 	time.Sleep(d)
-	mda, err := tr.Stop("a")
+	mda, _, err := tr.Stop("a")
 	if err != nil {
 		t.Fail()
 	}
 	time.Sleep(d)
-	mdb, err := tr.Stop("b")
+	mdb, _, err := tr.Stop("b")
 	if err != nil {
 		t.Fail()
 	}
@@ -50,7 +50,7 @@ func TestMultiTrack(t *testing.T) {
 
 func TestMissing(t *testing.T) {
 	tr := NewTracker()
-	_, err := tr.Stop("a")
+	_, _, err := tr.Stop("a")
 	if err == nil {
 		t.Fail()
 	}
@@ -60,11 +60,11 @@ func TestMissing(t *testing.T) {
 func TestMultiRead(t *testing.T) {
 	tr := NewTracker()
 	tr.Start("a")
-	_, err := tr.Stop("a")
+	_, _, err := tr.Stop("a")
 	if err != nil {
 		t.Fail()
 	}
-	_, err = tr.Stop("a")
+	_, _, err = tr.Stop("a")
 	if err == nil {
 		t.Fail()
 	}

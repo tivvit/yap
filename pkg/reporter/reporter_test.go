@@ -2,8 +2,8 @@ package reporter
 
 import (
 	"encoding/json"
-	"github.com/tivvit/yap/event"
 	"github.com/tivvit/yap/pkg/conf"
+	"github.com/tivvit/yap/pkg/reporter/event"
 	"io/ioutil"
 	"log"
 	"os"
@@ -33,8 +33,7 @@ func TestStdoutReport(t *testing.T) {
 	})
 	read, w, _ := os.Pipe()
 	log.SetOutput(w)
-	e := event.NewEvent()
-	e.Message = "Hi"
+	e := event.NewEvent("Hi")
 	r.Report(e)
 	w.Close()
 	out, _ := ioutil.ReadAll(read)
@@ -53,8 +52,7 @@ func TestJsonReport(t *testing.T) {
 			},
 		},
 	})
-	e := event.NewEvent()
-	e.Message = "Hi"
+	e := event.NewEvent("Hi")
 	r.Report(e)
 	f, _ := os.Open(fn)
 	b, _ := ioutil.ReadAll(f)
@@ -62,13 +60,11 @@ func TestJsonReport(t *testing.T) {
 		t.Fail()
 	}
 
-	e = event.NewEvent()
-	e.Message = "Hi 2"
+	bre := event.NewBlockRunEvent("Hi 2", "block")
 	tm := time.Now()
-	e.EndTime = &tm
-	e.StartTime = &tm
-	e.Tags = []string{"test"}
-	r.Report(e)
+	bre.StartTime = &tm
+	bre.Tags = []string{"test"}
+	r.Report(bre)
 	f, _ = os.Open(fn)
 	b, _ = ioutil.ReadAll(f)
 	if !strings.Contains(string(b), `"message": "Hi 2"`) {
@@ -77,13 +73,13 @@ func TestJsonReport(t *testing.T) {
 	if !strings.Contains(string(b), `"start-time"`) {
 		t.Error("start")
 	}
-	if !strings.Contains(string(b), `"end-time"`) {
-		t.Error("end")
-	}
 	if !strings.Contains(string(b), `"tags": [`) {
 		t.Error("tags")
 	}
-	var d []event.Event
+	if !strings.Contains(string(b), `"block": "block"`) {
+		t.Error("block")
+	}
+	var d []event.BaseEvent
 	err := json.Unmarshal(b, &d)
 	if err != nil {
 		t.Error("json parse")
@@ -103,8 +99,7 @@ func TestMultiReport(t *testing.T) {
 			},
 		},
 	})
-	e := event.NewEvent()
-	e.Message = "Hi"
+	e := event.NewEvent("Hi")
 	r.Report(e)
 	f, _ := os.Open(fn)
 	b, _ := ioutil.ReadAll(f)

@@ -20,11 +20,11 @@ func (t tracker) Start(name string) {
 	t.streams[name] = time.Now()
 }
 
-func (t* tracker) Stop(name string) (time.Duration, error) {
+func (t* tracker) Stop(name string) (time.Duration, time.Time, error) {
 	if v, ok := t.streams[name]; ok {
 		delete(t.streams, name)
-		return time.Since(v), nil
+		return time.Since(v), v, nil
 	} else {
-		return time.Duration(0), errors.New(fmt.Sprintf("tracker %s not started", name))
+		return time.Duration(0), time.Time{}, errors.New(fmt.Sprintf("tracker %s not started", name))
 	}
 }

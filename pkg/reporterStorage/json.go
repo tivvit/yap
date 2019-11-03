@@ -2,7 +2,7 @@ package reporterStorage
 
 import (
 	"encoding/json"
-	"github.com/tivvit/yap/event"
+	"github.com/tivvit/yap/pkg/reporter/event"
 	"github.com/tivvit/yap/pkg/storage"
 	"log"
 )

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"github.com/emicklei/dot"
 	"github.com/mattn/go-shellwords"
-	"github.com/tivvit/yap/event"
 	"github.com/tivvit/yap/pkg/conf"
 	yapDot "github.com/tivvit/yap/pkg/dot"
 	"github.com/tivvit/yap/pkg/reporter"
+	"github.com/tivvit/yap/pkg/reporter/event"
 	"github.com/tivvit/yap/pkg/stateStorage"
 	"github.com/tivvit/yap/pkg/tracker"
 	"github.com/tivvit/yap/pkg/utils"
@@ -98,36 +98,26 @@ func NewBlockFromMap(name string, m map[string]interface{}) *Block {
 }
 
 func (b Block) Run(state stateStorage.State, p *Pipeline) {
-	r, err := reporter.GetInstance()
-	if err != nil {
-		log.Println("reporter instance invalid")
-	}
 	t := tracker.NewTracker()
 
 	if !b.Changed(p.State, p) {
-		e := event.NewEvent()
-		e.Block = b.FullName
-		e.Message = "Not changed"
-		if r != nil {
-			r.Report(e)
-		}
+		e := event.NewBlockRunEvent("Not changed", b.FullName)
+		reporter.Report(e)
 		return
 	}
 
 	initState := b.GetDepsState(p)
 	t.Start(b.FullName)
 	utils.GenericRunEnv(b.Exec, b.Env)
-	d, err := t.Stop(b.FullName)
+	d, st, err := t.Stop(b.FullName)
+	e := event.NewBlockRunEvent("Finished", b.FullName)
 	if err != nil {
-		log.Printf("invalid timer for %s", b.FullName)
+		log.Printf("invalid tracker for %s", b.FullName)
 	} else {
-		e := event.NewEvent()
-		e.Block = b.FullName
+		e.StartTime = &st
 		e.Duration = &d
-		if r != nil {
-			r.Report(e)
-		}
 	}
+	reporter.Report(e)
 
 	// update state after run
 	s, err := b.GetState()
@@ -146,13 +136,9 @@ func (b Block) Run(state stateStorage.State, p *Pipeline) {
 			continue
 		}
 		state.Set(file.GetFullName(), c)
-		e := event.NewEvent()
-		e.Block = b.FullName
-		e.Message = fmt.Sprintf("Setting state for %s", f)
-		e.Tags = []string{"state"}
-		if r != nil {
-			r.Report(e)
-		}
+		e := event.NewBlockRunEvent(fmt.Sprintf("Setting state for %s", f), b.FullName)
+		e.AddTag("state")
+		reporter.Report(e)
 	}
 
 	state.Set(utils.DepsPrefix+b.FullName, initState)

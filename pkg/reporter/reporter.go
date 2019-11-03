@@ -2,8 +2,8 @@ package reporter
 
 import (
 	"errors"
-	"github.com/tivvit/yap/event"
 	"github.com/tivvit/yap/pkg/conf"
+	"github.com/tivvit/yap/pkg/reporter/event"
 	"github.com/tivvit/yap/pkg/reporterStorage"
 	"log"
 )
@@ -16,9 +16,9 @@ type reporter struct {
 	storages []reporterStorage.ReporterStorage
 }
 
-func (r *reporter) Report(e *event.Event) {
+func (r *reporter) Report(e event.Event) {
 	for _, s := range r.storages {
-		s.Add(*e)
+		s.Add(e)
 	}
 }
 
@@ -55,4 +55,13 @@ func GetInstance() (*reporter, error) {
 		return nil, errors.New("reporter was not instantiated")
 	}
 	return instance, nil
+}
+
+func Report(e event.Event) {
+	r, err := GetInstance()
+	if err != nil {
+		log.Println("reporter instance invalid")
+		return
+	}
+	r.Report(e)
 }
