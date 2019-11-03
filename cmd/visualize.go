@@ -1,19 +1,19 @@
 package cmd
 
 import (
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/tivvit/yap/cmdFlags"
 	"github.com/tivvit/yap/pkg"
 	conf2 "github.com/tivvit/yap/pkg/conf"
 	"github.com/tivvit/yap/pkg/stateStorage"
-	"log"
 )
 
 var visualizeCmd = &cobra.Command{
-	Use:   "visualize [block-name]",
+	Use:     "visualize [block-name]",
 	Aliases: []string{"v", "vis"},
-	Short: "visualize",
-	Long:  ``,
+	Short:   "visualize",
+	Long:    ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		o, err := cmd.Flags().GetString(cmdFlags.Out)
 		if err != nil {
@@ -49,14 +49,14 @@ var visualizeCmd = &cobra.Command{
 		}
 
 		conf := conf2.VisualizeConf{
-			OutputFile: o,
-			OutputImage: oi,
+			OutputFile:        o,
+			OutputImage:       oi,
 			OutputConnections: !oc,
-			PipelineNodes: !pn,
-			PipelineBoxes: !pb,
-			RunDot: !d,
-			Legend: !l,
-			Check: s,
+			PipelineNodes:     !pn,
+			PipelineBoxes:     !pb,
+			RunDot:            !d,
+			Legend:            !l,
+			Check:             s,
 		}
 
 		log.Println(conf)

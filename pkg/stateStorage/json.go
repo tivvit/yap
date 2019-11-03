@@ -2,12 +2,12 @@ package stateStorage
 
 import (
 	"encoding/json"
+	log "github.com/sirupsen/logrus"
 	"github.com/tivvit/yap/pkg/storage"
-	"log"
 )
 
 type jsonStorage struct {
-	data map[string]string
+	data    map[string]string
 	storage storage.Storage
 }
 
@@ -38,7 +38,7 @@ func NewJsonStorage() *jsonStorage {
 	f := "state.json"
 	js := jsonStorage{
 		storage: storage.NewFileStorage(f),
-		data: map[string]string{},
+		data:    map[string]string{},
 	}
 	b := js.storage.Read()
 	if len(b) == 0 {

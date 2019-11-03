@@ -4,7 +4,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tivvit/yap/pkg"
 	"gopkg.in/yaml.v3"
-	"log"
+	log "github.com/sirupsen/logrus"
 )
 
 var printCmd = &cobra.Command{

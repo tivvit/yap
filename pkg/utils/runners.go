@@ -2,10 +2,10 @@ package utils
 
 import (
 	"bytes"
+	log "github.com/sirupsen/logrus"
 	"github.com/tivvit/yap/pkg/reporter"
 	"github.com/tivvit/yap/pkg/reporter/event"
 	"github.com/tivvit/yap/pkg/tracker"
-	"log"
 	"os"
 	"os/exec"
 	"strings"
@@ -49,4 +49,3 @@ func run(cmd []string, env []string) string {
 	//log.Println(out.String())
 	return out.String()
 }
-

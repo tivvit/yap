@@ -6,7 +6,7 @@ import (
 	"github.com/tivvit/yap/pkg/state"
 	"github.com/tivvit/yap/pkg/stateStorage"
 	"github.com/tivvit/yap/pkg/utils"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
 	"reflect"

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/tivvit/yap/cmdFlags"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"os"
 )
 
