@@ -2,6 +2,7 @@ package structs
 
 import (
 	"github.com/emicklei/dot"
+	"github.com/tivvit/yap/pkg/conf"
 	"github.com/tivvit/yap/pkg/stateStorage"
 	log "github.com/sirupsen/logrus"
 	"strings"
@@ -26,7 +27,7 @@ type Graphable interface {
 }
 
 type Visualizable interface {
-	Visualize(ctx *dot.Graph, p *Pipeline, fileMap *map[string]*File, m *map[string]dot.Node, conf VisualizeConf)
+	Visualize(ctx *dot.Graph, p *Pipeline, fileMap *map[string]*File, m *map[string]dot.Node, conf conf.VisualizeConf)
 }
 
 type PipelineBlockBase struct {

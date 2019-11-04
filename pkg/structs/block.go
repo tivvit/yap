@@ -5,8 +5,12 @@ import (
 	"fmt"
 	"github.com/emicklei/dot"
 	"github.com/mattn/go-shellwords"
+	"github.com/tivvit/yap/pkg/conf"
 	yapDot "github.com/tivvit/yap/pkg/dot"
+	"github.com/tivvit/yap/pkg/reporter"
+	"github.com/tivvit/yap/pkg/reporter/event"
 	"github.com/tivvit/yap/pkg/stateStorage"
+	"github.com/tivvit/yap/pkg/tracker"
 	"github.com/tivvit/yap/pkg/utils"
 	log "github.com/sirupsen/logrus"
 	"strings"
@@ -94,12 +98,26 @@ func NewBlockFromMap(name string, m map[string]interface{}) *Block {
 }
 
 func (b Block) Run(state stateStorage.State, p *Pipeline) {
+	t := tracker.NewTracker()
+
 	if !b.Changed(p.State, p) {
+		e := event.NewBlockRunEvent("Not changed", b.FullName)
+		reporter.Report(e)
 		return
 	}
 
 	initState := b.GetDepsState(p)
+	t.Start(b.FullName)
 	utils.GenericRunEnv(b.Exec, b.Env)
+	d, st, err := t.Stop(b.FullName)
+	e := event.NewBlockRunEvent("Finished", b.FullName)
+	if err != nil {
+		log.Printf("invalid tracker for %s", b.FullName)
+	} else {
+		e.StartTime = &st
+		e.Duration = &d
+	}
+	reporter.Report(e)
 
 	// update state after run
 	s, err := b.GetState()
@@ -111,13 +129,16 @@ func (b Block) Run(state stateStorage.State, p *Pipeline) {
 
 	// state of input files has to be stored somewhere - this is probably the correct place because the block is using the files
 	for _, f := range append(b.Out, b.In...) {
-		file :=  p.MapFiles[f]
+		file := p.MapFiles[f]
 		c, err := file.GetState()
 		if err != nil {
 			log.Println(err)
 			continue
 		}
 		state.Set(file.GetFullName(), c)
+		e := event.NewBlockRunEvent(fmt.Sprintf("Setting state for %s", f), b.FullName)
+		e.AddTag("state")
+		reporter.Report(e)
 	}
 
 	state.Set(utils.DepsPrefix+b.FullName, initState)
@@ -227,7 +248,7 @@ func (b Block) GetDepsFull() []string {
 	return ret
 }
 
-func (b Block) Visualize(ctx *dot.Graph, p *Pipeline, fileMap *map[string]*File, m *map[string]dot.Node, conf VisualizeConf) {
+func (b Block) Visualize(ctx *dot.Graph, p *Pipeline, fileMap *map[string]*File, m *map[string]dot.Node, conf conf.VisualizeConf) {
 	nameFmt := "<tr><td><b>%s</b></td></tr>"
 	name := fmt.Sprintf(nameFmt, b.Name)
 	cmdFmt := `<tr><td><font face="Courier New, Courier, monospace">%s</font></td></tr>`

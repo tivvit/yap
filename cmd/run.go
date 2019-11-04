@@ -4,7 +4,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tivvit/yap/cmdFlags"
 	"github.com/tivvit/yap/pkg"
+	"github.com/tivvit/yap/pkg/conf"
 	"github.com/tivvit/yap/pkg/pipeline"
+	"github.com/tivvit/yap/pkg/reporter"
 	"github.com/tivvit/yap/pkg/stateStorage"
 	log "github.com/sirupsen/logrus"
 )
@@ -24,6 +26,14 @@ var runCmd = &cobra.Command{
 		}
 		log.Println(dr)
 		// todo dry run
+
+		reporter.NewReporter(conf.ReporterConf{
+			Storages: []conf.ReporterStorageConf{
+				conf.ReporterStorageConfJson{
+					FileName: "report.json",
+				},
+			},
+		})
 
 		if len(args) == 0 {
 			p.Run(js, p)

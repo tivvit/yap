@@ -4,7 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/emicklei/dot"
+	"github.com/tivvit/yap/pkg/conf"
+	"github.com/tivvit/yap/pkg/reporter"
+	"github.com/tivvit/yap/pkg/reporter/event"
 	"github.com/tivvit/yap/pkg/stateStorage"
+	"github.com/tivvit/yap/pkg/tracker"
 	"github.com/tivvit/yap/pkg/utils"
 	log "github.com/sirupsen/logrus"
 	"strings"
@@ -51,7 +55,18 @@ type PipelineRaw struct {
 func (p Pipeline) Run(state stateStorage.State, pl *Pipeline) {
 	for k, v := range p.Pipeline {
 		log.Printf("Running %s", k)
+		t := tracker.NewTracker()
+		t.Start(p.FullName)
 		v.Run(state, pl)
+		d, st, err := t.Stop(p.FullName)
+		e := event.NewPipelineRunEvent("Finished", p.FullName)
+		if err != nil {
+			log.Printf("Tracker failed for pipeline %s \n", p.FullName)
+		} else {
+			e.StartTime = &st
+			e.Duration = &d
+		}
+		reporter.Report(e)
 	}
 }
 
@@ -295,7 +310,7 @@ func (p Pipeline) GetGraphable() map[string]Graphable {
 //	return nodesMap, deps
 //}
 
-func (p Pipeline) Visualize(ctx *dot.Graph, pi *Pipeline, fileMap *map[string]*File, m *map[string]dot.Node, conf VisualizeConf) {
+func (p Pipeline) Visualize(ctx *dot.Graph, pi *Pipeline, fileMap *map[string]*File, m *map[string]dot.Node, conf conf.VisualizeConf) {
 	splitName := strings.Split(p.FullName, "/")
 	name := splitName[len(splitName)-1]
 	//log.Println("name is", name, "for", p.FullName)

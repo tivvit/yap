@@ -2,24 +2,26 @@ package stateStorage
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	log "github.com/sirupsen/logrus"
-	"os"
+	"github.com/tivvit/yap/pkg/storage"
 )
 
-type jsonStorage map[string]string
+type jsonStorage struct {
+	data    map[string]string
+	storage storage.Storage
+}
 
 func (js *jsonStorage) Set(key string, value string) {
-	(*js)[key] = value
+	(*js).data[key] = value
 	js.write()
 }
 
 func (js *jsonStorage) Get(key string) string {
-	return (*js)[key]
+	return (*js).data[key]
 }
 
 func (js *jsonStorage) Delete(key string) {
-	delete(*js, key)
+	delete((*js).data, key)
 	js.write()
 }
 
@@ -28,26 +30,21 @@ func (js jsonStorage) write() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	err = ioutil.WriteFile("state.json", b, 0644)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	js.storage.Write(b)
 }
 
 func NewJsonStorage() *jsonStorage {
-	js := jsonStorage{}
 	// todo configurable
 	f := "state.json"
-	_, err := os.Stat(f)
-	if os.IsNotExist(err) {
-		js.write()
+	js := jsonStorage{
+		storage: storage.NewFileStorage(f),
+		data:    map[string]string{},
 	}
-	b, err := ioutil.ReadFile(f)
-	if err != nil {
-		log.Println(err)
+	b := js.storage.Read()
+	if len(b) == 0 {
 		return &js
 	}
-	err = json.Unmarshal(b, &js)
+	err := json.Unmarshal(b, &js)
 	if err != nil {
 		log.Fatalln(err)
 	}

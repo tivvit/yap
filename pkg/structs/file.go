@@ -2,6 +2,7 @@ package structs
 
 import (
 	"github.com/emicklei/dot"
+	"github.com/tivvit/yap/pkg/conf"
 	"github.com/tivvit/yap/pkg/state"
 	"github.com/tivvit/yap/pkg/stateStorage"
 	"github.com/tivvit/yap/pkg/utils"
@@ -231,7 +232,7 @@ func (f File) GetFullName() string {
 	return DotFilePrefix + f.Name
 }
 
-func (f File) Visualize(ctx *dot.Graph, p *Pipeline, fileMap *map[string]*File, m *map[string]dot.Node, conf VisualizeConf) {
+func (f File) Visualize(ctx *dot.Graph, p *Pipeline, fileMap *map[string]*File, m *map[string]dot.Node, conf conf.VisualizeConf) {
 	if f.Analyzed && f.IsDir {
 		(*m)[f.GetFullName()] = ctx.Node(DotFilePrefix+f.Name).Attr("shape", DirShape).Label(f.Name)
 	} else {
