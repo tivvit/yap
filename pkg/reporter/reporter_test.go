@@ -38,6 +38,7 @@ func TestStdoutReport(t *testing.T) {
 	out, _ := ioutil.ReadAll(read)
 	log.SetOutput(os.Stdout)
 	//log.Println(string(out))
+	// todo this output is not nice - when using logrus use structured logs
 	if !strings.Contains(string(out), `\"message\": \"Hi\"`) {
 		t.Fail()
 	}
