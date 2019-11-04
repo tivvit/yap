@@ -1,8 +1,8 @@
 package storage
 
 import (
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"os"
 )
 
@@ -13,8 +13,7 @@ type fileStorage struct {
 func (fs fileStorage) Write(b []byte) {
 	err := ioutil.WriteFile(fs.fileName, b, 0644)
 	if err != nil {
-		// todo warn
-		log.Println(err)
+		log.Warnln(err)
 	}
 }
 
@@ -29,7 +28,7 @@ func (fs fileStorage) Read() []byte {
 
 func NewFileStorage(fileName string) *fileStorage {
 	fs := fileStorage{
-		fileName:fileName,
+		fileName: fileName,
 	}
 	fs.fileName = fileName
 	_, err := os.Stat(fs.fileName)

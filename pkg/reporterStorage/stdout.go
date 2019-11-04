@@ -2,8 +2,8 @@ package reporterStorage
 
 import (
 	"encoding/json"
+	log "github.com/sirupsen/logrus"
 	"github.com/tivvit/yap/pkg/reporter/event"
-	"log"
 )
 
 type stdoutStorage struct{}

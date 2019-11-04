@@ -2,9 +2,9 @@ package reporterStorage
 
 import (
 	"encoding/json"
+	log "github.com/sirupsen/logrus"
 	"github.com/tivvit/yap/pkg/reporter/event"
 	"github.com/tivvit/yap/pkg/storage"
-	"log"
 )
 
 type events []event.Event

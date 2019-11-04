@@ -2,10 +2,10 @@ package reporter
 
 import (
 	"errors"
+	log "github.com/sirupsen/logrus"
 	"github.com/tivvit/yap/pkg/conf"
 	"github.com/tivvit/yap/pkg/reporter/event"
 	"github.com/tivvit/yap/pkg/reporterStorage"
-	"log"
 )
 
 var (
@@ -36,7 +36,7 @@ func newReporter(rc conf.ReporterConf) *reporter {
 			log.Printf("Unknown reporter storage %T\n", s)
 		}
 	}
-	instance =  &reporter{
+	instance = &reporter{
 		storages: storages,
 	}
 	return instance

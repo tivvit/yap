@@ -2,10 +2,10 @@ package reporter
 
 import (
 	"encoding/json"
+	log "github.com/sirupsen/logrus"
 	"github.com/tivvit/yap/pkg/conf"
 	"github.com/tivvit/yap/pkg/reporter/event"
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
 	"testing"
@@ -24,7 +24,6 @@ func TestMain(m *testing.M) {
 	os.Exit(r)
 }
 
-
 func TestStdoutReport(t *testing.T) {
 	r := newReporter(conf.ReporterConf{
 		Storages: []conf.ReporterStorageConf{
@@ -38,7 +37,8 @@ func TestStdoutReport(t *testing.T) {
 	w.Close()
 	out, _ := ioutil.ReadAll(read)
 	log.SetOutput(os.Stdout)
-	if !strings.Contains(string(out), `"message": "Hi"`) {
+	//log.Println(string(out))
+	if !strings.Contains(string(out), `\"message\": \"Hi\"`) {
 		t.Fail()
 	}
 }
@@ -143,4 +143,3 @@ func TestInstance(t *testing.T) {
 		t.Error("instances differ after second init")
 	}
 }
-
