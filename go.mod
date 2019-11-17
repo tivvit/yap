@@ -1,6 +1,6 @@
 module github.com/tivvit/yap
 
-go 1.12
+go 1.13
 
 require (
 	github.com/emicklei/dot v0.10.0
