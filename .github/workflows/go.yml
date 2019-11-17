@@ -23,6 +23,16 @@ jobs:
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
             dep ensure
         fi
-
+        
+    - name: test
+      run: go test -v ./...
+  
     - name: Build
       run: go build -v .
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        name: yap
+        path: ./yap
+
