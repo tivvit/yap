@@ -1,0 +1,7 @@
+version: 1.0
+pipeline:
+  main:
+    exec: bash -c 'echo "a" > out'
+    type: script
+    out:
+      - out
