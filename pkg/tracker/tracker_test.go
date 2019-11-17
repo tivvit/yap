@@ -15,7 +15,7 @@ func TestTrack(t *testing.T) {
 		t.Fail()
 	}
 	mdt := md.Truncate(time.Millisecond)
-	t.Log(md, mdt, mdt - d)
+	//t.Log(md, mdt, mdt - d)
 	if (mdt - d) > (2 * time.Millisecond) {
 		t.Fail()
 	}
@@ -38,7 +38,7 @@ func TestMultiTrack(t *testing.T) {
 	}
 	mdat := mda.Truncate(time.Millisecond)
 	mdbt := mdb.Truncate(time.Millisecond)
-	t.Log(mda, mdb, mdat, mdbt, mdat -  d, mdbt - (2 * d))
+	//t.Log(mda, mdb, mdat, mdbt, mdat -  d, mdbt - (2 * d))
 	if (mdat -  d) > (2 * time.Millisecond) {
 		t.Fail()
 	}
