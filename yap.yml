@@ -1,0 +1,15 @@
+version: 1.0
+pipeline:
+  test:
+    exec: go test -v -count=1 ./...
+  build:
+# todo waiting for glob support
+#    in:
+#      - "**/*.go"
+    exec: go build .
+    out:
+      - yap
+  install:
+    deps:
+      - build
+    exec: cp yap /usr/local/bin/
