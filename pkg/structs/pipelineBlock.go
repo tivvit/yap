@@ -12,7 +12,7 @@ type PipelineBlock interface {
 	Checkable
 	Graphable
 	Visualizable
-	Run(state stateStorage.State, p *Pipeline)
+	Run(state stateStorage.State, p *Pipeline, dry bool)
 	GetParent() *Pipeline
 }
 

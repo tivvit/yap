@@ -10,5 +10,5 @@ const (
 	NoPipelineBoxes = "no-pipeline-boxes"
 	NoRunDot        = "no-run-dot"
 	NoLegend        = "no-legend"
-	Check			= "check"
+	Check           = "check"
 )

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/tivvit/yap/cmdFlags"
 	"github.com/tivvit/yap/pkg"
@@ -8,40 +9,42 @@ import (
 	"github.com/tivvit/yap/pkg/pipeline"
 	"github.com/tivvit/yap/pkg/reporter"
 	"github.com/tivvit/yap/pkg/stateStorage"
-	log "github.com/sirupsen/logrus"
 )
 
-
 var runCmd = &cobra.Command{
-	Use:   "run [block-name]",
+	Use:     "run [block-name]",
 	Aliases: []string{"r"},
-	Short: "run",
-	Long:  ``,
+	Short:   "run",
+	Long:    ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		p := pkg.LoadCmd(cmd)
 		js := stateStorage.NewJsonStorage()
-		dr, err := cmd.Flags().GetBool(cmdFlags.DryRun)
+		dry, err := cmd.Flags().GetBool(cmdFlags.DryRun)
 		if err != nil {
 			log.Fatalln(err)
 		}
-		log.Println(dr)
-		// todo dry run
-
-		reporter.NewReporter(conf.ReporterConf{
-			Storages: []conf.ReporterStorageConf{
-				conf.ReporterStorageConfJson{
-					FileName: "report.json",
+		if dry {
+			// todo configure reporter by flags (pipeline conf)
+			log.Infoln("Dry run")
+			reporter.NewReporter(conf.ReporterConf{
+				Storages: []conf.ReporterStorageConf{},
+			})
+		} else {
+			reporter.NewReporter(conf.ReporterConf{
+				Storages: []conf.ReporterStorageConf{
+					conf.ReporterStorageConfJson{
+						FileName: "report.json",
+					},
 				},
-			},
-		})
+			})
+		}
 
 		if len(args) == 0 {
-			p.Run(js, p)
+			p.Run(js, p, dry)
 		} else if len(args) == 1 {
 			pl := pipeline.Plan(p, args[0])
-			log.Println(pl)
 			for _, ps := range pl {
-				ps.Run(js, p)
+				ps.Run(js, p, dry)
 			}
 		} else {
 			log.Fatalln("too many args")

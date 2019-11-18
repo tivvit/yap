@@ -1,0 +1,7 @@
+version: 1.0
+pipeline:
+  fail:
+    exec: "false"
+#    may-fail: true
+  ok:
+    exec: "true"

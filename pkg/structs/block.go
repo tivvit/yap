@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/emicklei/dot"
 	"github.com/mattn/go-shellwords"
+	log "github.com/sirupsen/logrus"
 	"github.com/tivvit/yap/pkg/conf"
 	yapDot "github.com/tivvit/yap/pkg/dot"
 	"github.com/tivvit/yap/pkg/reporter"
@@ -12,7 +13,6 @@ import (
 	"github.com/tivvit/yap/pkg/stateStorage"
 	"github.com/tivvit/yap/pkg/tracker"
 	"github.com/tivvit/yap/pkg/utils"
-	log "github.com/sirupsen/logrus"
 	"strings"
 )
 
@@ -25,6 +25,9 @@ type Block struct {
 	In                []string `yaml:"in,omitempty"`
 	Out               []string `yaml:"out,omitempty"`
 	Env               []string `yaml:"env,omitempty"`
+	Stdout            bool     `yaml:"stdout,omitempty"`
+	Stderr            bool     `yaml:"stderr,omitempty"`
+	MayFail           bool     `yaml:"may-fail,omitempty"`
 }
 
 type IncludeBlock struct {
@@ -45,6 +48,17 @@ func NewBlockFromMap(name string, m map[string]interface{}) *Block {
 		PipelineBlockBase: PipelineBlockBase{},
 	}
 	b.Name = name
+	b.Stdout = true
+	b.Stderr = true
+	if m["stdout"] != nil {
+		b.Stdout = m["stdout"].(bool)
+	}
+	if m["stderr"] != nil {
+		b.Stderr = m["stderr"].(bool)
+	}
+	if m["may-fail"] != nil {
+		b.MayFail = m["may-fail"].(bool)
+	}
 	// todo keys names based on struct annotation
 	if m["exec"] == nil {
 		log.Fatal("exec field missing")
@@ -94,21 +108,46 @@ func NewBlockFromMap(name string, m map[string]interface{}) *Block {
 		}
 		b.Env = env
 	}
+	if m["env"] != nil {
+		var env []string
+		for _, d := range m["env"].([]interface{}) {
+			env = append(env, d.(string))
+		}
+		b.Env = env
+	}
 	return &b
 }
 
-func (b Block) Run(state stateStorage.State, p *Pipeline) {
+func (b Block) Run(state stateStorage.State, p *Pipeline, dry bool) {
 	t := tracker.NewTracker()
+	if dry {
+		log.Infof("Running %s `%s`", b.FullName, strings.Join(b.Exec, " "))
+	} else {
+		log.Infof("Running %s", b.FullName)
+	}
 
 	if !b.Changed(p.State, p) {
 		e := event.NewBlockRunEvent("Not changed", b.FullName)
-		reporter.Report(e)
+		if !dry {
+			reporter.Report(e)
+		}
+		return
+	}
+
+	if dry {
 		return
 	}
 
 	initState := b.GetDepsState(p)
 	t.Start(b.FullName)
-	utils.GenericRunEnv(b.Exec, b.Env)
+	_, ok := utils.GenericRunEnv(b.Exec, b.Env, b.Stdout, b.Stderr)
+	fatalFail := false
+	if !ok {
+		log.Warnf("%s failed", b.FullName)
+		if !b.MayFail {
+			fatalFail = true
+		}
+	}
 	d, st, err := t.Stop(b.FullName)
 	e := event.NewBlockRunEvent("Finished", b.FullName)
 	if err != nil {
@@ -141,6 +180,11 @@ func (b Block) Run(state stateStorage.State, p *Pipeline) {
 		reporter.Report(e)
 	}
 
+	log.Infof("Finished %s in %s", b.FullName, d)
+	if fatalFail {
+		log.Fatalf("%s failed - stopping pipeline", b.FullName)
+		// todo this should be passed higher and pipeline should end correctly
+	}
 	state.Set(utils.DepsPrefix+b.FullName, initState)
 }
 
@@ -196,7 +240,8 @@ func (b Block) GetState() (string, error) {
 	if len(b.Check) > 0 {
 		// this should be used for checking external deps (i.e. download over internet)
 		log.Printf("Explicit state check `%s`\n", strings.Join(b.Check, " "))
-		out := utils.GenericRun(b.Check)
+		// todo review
+		out, _ := utils.GenericRun(b.Check)
 		cs, err := utils.Md5Checksum(strings.NewReader(out))
 		if err != nil {
 			log.Println(err)
@@ -225,7 +270,7 @@ func (b Block) Changed(state stateStorage.State, p *Pipeline) bool {
 	// json should have persistent ordering of keys in json
 	storedState := state.Get(b.FullName)
 	if storedState != currentState {
-		log.Printf("%s state changed", b.Name)
+		log.Printf("%s state changed", b.FullName)
 		return true
 	}
 

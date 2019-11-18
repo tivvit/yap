@@ -10,6 +10,7 @@ type RunEvent struct {
 	BaseEvent `yaml:",inline"`
 	Command   string         `json:"command,omitempty"`
 	Env       string         `json:"env,omitempty"`
+	Failed    bool           `json:"failed,omitempty"`
 	Duration  *time.Duration `json:"duration-nano,omitempty"`
 	StartTime *time.Time     `json:"start-time,omitempty"`
 }

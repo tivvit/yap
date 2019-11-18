@@ -11,19 +11,23 @@ import (
 	"strings"
 )
 
-func GenericRun(cmd []string) string {
-	return run(cmd, []string{})
+func GenericRun(cmd []string) (string, bool) {
+	return run(cmd, []string{}, true, true)
 }
 
-func GenericRunEnv(cmd []string, environ []string) string {
+func SilentRun(cmd []string) (string, bool) {
+	return run(cmd, []string{}, false, false)
+}
+
+func GenericRunEnv(cmd []string, environ []string, stdout bool, stderr bool) (string, bool) {
 	env := os.Environ()
 	for _, e := range environ {
 		env = append(env, e)
 	}
-	return run(cmd, env)
+	return run(cmd, env, stdout, stderr)
 }
 
-func run(cmd []string, env []string) string {
+func run(cmd []string, env []string, stdout bool, stderr bool) (string, bool) {
 	//log.Println(strings.Join(cmd, " "))
 	c := exec.Command(cmd[0], cmd[1:]...)
 	c.Env = env
@@ -31,7 +35,17 @@ func run(cmd []string, env []string) string {
 	c.Stdout = &out
 	t := tracker.NewTracker()
 	t.Start("run")
+	if stdout {
+		c.Stdout = os.Stdout
+	}
+	if stderr {
+		c.Stderr = os.Stderr
+	}
 	err := c.Run()
+	if err != nil {
+		log.Warnln(err)
+	}
+	// todo read info about process (cpu time ...)
 	e := event.NewRunEvent("Finished")
 	d, st, err := t.Stop("run")
 	if err != nil {
@@ -42,10 +56,7 @@ func run(cmd []string, env []string) string {
 	}
 	e.Command = strings.Join(cmd, " ")
 	e.Env = strings.Join(env, "\n")
+	e.Failed  = !c.ProcessState.Success()
 	reporter.Report(e)
-	if err != nil {
-		log.Fatal(err)
-	}
-	//log.Println(out.String())
-	return out.String()
+	return out.String(), c.ProcessState.Success()
 }

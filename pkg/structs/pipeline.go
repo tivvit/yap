@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/emicklei/dot"
+	log "github.com/sirupsen/logrus"
 	"github.com/tivvit/yap/pkg/conf"
 	"github.com/tivvit/yap/pkg/reporter"
 	"github.com/tivvit/yap/pkg/reporter/event"
 	"github.com/tivvit/yap/pkg/stateStorage"
 	"github.com/tivvit/yap/pkg/tracker"
 	"github.com/tivvit/yap/pkg/utils"
-	log "github.com/sirupsen/logrus"
 	"strings"
 )
 
@@ -52,21 +52,31 @@ type PipelineRaw struct {
 	Deps     []string               `yaml:"deps"`
 }
 
-func (p Pipeline) Run(state stateStorage.State, pl *Pipeline) {
+func (p Pipeline) Run(state stateStorage.State, pl *Pipeline, dry bool) {
+	t := tracker.NewTracker()
+	log.Infof("Running %s", p.FullName)
+	t.Start(p.FullName)
 	for k, v := range p.Pipeline {
-		log.Printf("Running %s", k)
-		t := tracker.NewTracker()
-		t.Start(p.FullName)
-		v.Run(state, pl)
-		d, st, err := t.Stop(p.FullName)
+		t.Start(k)
+		v.Run(state, pl, dry)
+		d, st, err := t.Stop(k)
 		e := event.NewPipelineRunEvent("Finished", p.FullName)
 		if err != nil {
-			log.Printf("Tracker failed for pipeline %s \n", p.FullName)
+			log.Printf("Tracker failed for pipeline %s task %s\n", p.FullName, k)
 		} else {
 			e.StartTime = &st
 			e.Duration = &d
 		}
 		reporter.Report(e)
+	}
+	d, _, err := t.Stop(p.FullName)
+	if err != nil {
+		log.Printf("Tracker failed for pipeline %s \n", p.FullName)
+		log.Infof("Finished %s in unknown time", p.FullName)
+	} else {
+		if !dry {
+			log.Infof("Finished %s in %s", p.FullName, d)
+		}
 	}
 }
 
@@ -321,7 +331,7 @@ func (p Pipeline) Visualize(ctx *dot.Graph, pi *Pipeline, fileMap *map[string]*F
 		changed := false
 		if conf.PipelineBoxes {
 			innerCtx = ctx.Subgraph(name, dot.ClusterOption{})
-			if changed  {
+			if changed {
 				innerCtx.Attr("color", utils.DotChangedColor)
 			}
 		}

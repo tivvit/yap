@@ -90,7 +90,10 @@ func LoadScript(name string) (*structs.PipelineRaw, error) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	out := utils.GenericRun(c)
+	out, ok := utils.SilentRun(c)
+	if !ok {
+		log.Fatalf("`%s` failed during loading pipeline", c)
+	}
 	p := structs.PipelineRaw{}
 	err = yaml.Unmarshal([]byte(out), &p)
 	if err != nil {

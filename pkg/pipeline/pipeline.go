@@ -1,9 +1,9 @@
 package pipeline
 
 import (
+	log "github.com/sirupsen/logrus"
 	"github.com/tivvit/yap/pkg/structs"
 	"github.com/yourbasic/graph"
-	log "github.com/sirupsen/logrus"
 )
 
 func Filter(name string, stageMap map[string]structs.Graphable) map[string]structs.Graphable {
