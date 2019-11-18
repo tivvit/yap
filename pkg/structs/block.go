@@ -248,9 +248,6 @@ func (b Block) GetState() (string, error) {
 			state[StateNameCheck] = "ERROR"
 		}
 		state[StateNameCheck] = cs
-	} else {
-		// no explicit state check
-		// todo support mutable blocks
 	}
 
 	js, err := json.Marshal(state)
