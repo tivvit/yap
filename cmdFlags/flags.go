@@ -11,4 +11,5 @@ const (
 	NoRunDot        = "no-run-dot"
 	NoLegend        = "no-legend"
 	Check           = "check"
+	Quiet           = "quiet"
 )

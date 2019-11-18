@@ -15,6 +15,7 @@ var listCmd = &cobra.Command{
 	Aliases: []string{"l"},
 	Short:   "list",
 	Long:    ``,
+	Args: cobra.RangeArgs(0, 1),
 	Run: func(cmd *cobra.Command, args []string) {
 		p := pkg.LoadCmd(cmd)
 
@@ -34,6 +35,7 @@ var listCmd = &cobra.Command{
 }
 
 func printList(b []string, f func(s string) bool) {
+	// todo add formatted output option
 	sort.Strings(b)
 	for _, i := range b {
 		if f(i) {

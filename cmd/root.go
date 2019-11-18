@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/tivvit/yap/cmdFlags"
-	log "github.com/sirupsen/logrus"
 	"os"
 )
 
@@ -14,14 +14,16 @@ var yapCmd = &cobra.Command{
 	Use:   "yap",
 	Short: "Yet Another Pipeline",
 	Long:  ``,
+	Args: cobra.OnlyValidArgs,
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		setLogger(cmd)
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		err := cmd.Help()
 		if err != nil {
 			log.Fatalln(err)
 		}
 		os.Exit(0)
-
-
 	},
 }
 
@@ -31,6 +33,7 @@ func init() {
 	yapCmd.AddCommand(printCmd)
 	yapCmd.AddCommand(listCmd)
 	yapCmd.PersistentFlags().StringP(cmdFlags.File, "f", "", "Main yapfile path")
+	yapCmd.PersistentFlags().BoolP(cmdFlags.Quiet, "q", false, "Suppress yap output")
 	runCmd.Flags().BoolP(cmdFlags.DryRun, "d", false, "Do not run - just check")
 	visualizeCmd.Flags().StringP(cmdFlags.Out, "o", "graph.dot", "Output graph filename")
 	visualizeCmd.Flags().StringP(cmdFlags.OutImage, "i", "graph.png", "Output graph image filename")
@@ -40,6 +43,16 @@ func init() {
 	visualizeCmd.Flags().BoolP(cmdFlags.NoRunDot, "D", false, "Do not Run dot")
 	visualizeCmd.Flags().BoolP(cmdFlags.NoLegend, "L", false, "Do not Display legend")
 	visualizeCmd.Flags().BoolP(cmdFlags.Check, "s", false, "Check state changes")
+}
+
+func setLogger(cmd *cobra.Command) {
+	quiet, err := cmd.Flags().GetBool(cmdFlags.Quiet)
+	if err != nil {
+		log.Warnln("Quiet flag not loaded")
+	}
+	if quiet {
+		log.SetLevel(log.FatalLevel)
+	}
 }
 
 func Execute() {
