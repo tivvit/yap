@@ -3,6 +3,7 @@ package structs
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/bmatcuk/doublestar"
 	"github.com/emicklei/dot"
 	"github.com/mattn/go-shellwords"
 	log "github.com/sirupsen/logrus"
@@ -90,23 +91,30 @@ func NewBlockFromMap(name string, m map[string]interface{}) *Block {
 	if m["in"] != nil {
 		var in []string
 		for _, i := range m["in"].([]interface{}) {
-			in = append(in, i.(string))
+			g, err := doublestar.Glob(i.(string))
+			if err != nil {
+				log.Warnf("Glob %s failed: %s", i, g)
+			} else {
+				for _, f := range g {
+					in = append(in, f)
+				}
+			}
 		}
 		b.In = in
 	}
 	if m["out"] != nil {
 		var out []string
 		for _, d := range m["out"].([]interface{}) {
-			out = append(out, d.(string))
+			g, err := doublestar.Glob(d.(string))
+			if err != nil {
+				log.Warnf("Glob %s failed: %s", d, g)
+			} else {
+				for _, f := range g {
+					out = append(out, f)
+				}
+			}
 		}
 		b.Out = out
-	}
-	if m["env"] != nil {
-		var env []string
-		for _, d := range m["env"].([]interface{}) {
-			env = append(env, d.(string))
-		}
-		b.Env = env
 	}
 	if m["env"] != nil {
 		var env []string
@@ -126,7 +134,7 @@ func (b Block) Run(state stateStorage.State, p *Pipeline, dry bool) {
 		log.Infof("Running %s", b.FullName)
 	}
 
-	if !b.Changed(p.State, p) {
+	if !b.Changed(state, p) {
 		e := event.NewBlockRunEvent("Not changed", b.FullName)
 		if !dry {
 			reporter.Report(e)
@@ -190,20 +198,27 @@ func (b Block) Run(state stateStorage.State, p *Pipeline, dry bool) {
 
 func (b Block) GetDepsState(p *Pipeline) string {
 	depsState := make(map[string]string)
-	for _, f := range b.In {
-		var st string
-		var err error
-		if v, ok := p.MapFiles[f]; ok {
-			st, err = v.GetState()
-		} else {
-			log.Println(f, "NOT FOUND")
-			continue
-		}
+	for _, fp := range b.In {
+		g, err := doublestar.Glob(fp)
 		if err != nil {
-			log.Println(err)
-			st = ""
+			log.Warnf("Glob %s failed: %s", fp, g)
+		} else {
+			for _, f := range g {
+				var st string
+				var err error
+				if v, ok := p.MapFiles[f]; ok {
+					st, err = v.GetState()
+				} else {
+					log.Println(f, "NOT FOUND")
+					continue
+				}
+				if err != nil {
+					log.Println(err)
+					st = ""
+				}
+				depsState[f] = st
+			}
 		}
-		depsState[f] = st
 	}
 	for _, d := range b.DepsFull {
 		var st string
@@ -275,6 +290,7 @@ func (b Block) Changed(state stateStorage.State, p *Pipeline) bool {
 	depsState := b.GetDepsState(p)
 	storedDepsState := state.Get(utils.DepsPrefix + b.FullName)
 	if depsState != storedDepsState {
+		log.Printf("%s deps state changed", b.FullName)
 		return true
 	}
 	log.Printf("not running %s - state did not change", b.Name)

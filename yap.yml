@@ -1,11 +1,12 @@
 version: 1.0
 pipeline:
   test:
+    in:
+      - "**/*.go"
     exec: go test -v -count=1 ./...
   build:
-# todo waiting for glob support
-#    in:
-#      - "**/*.go"
+    in:
+      - "**/*.go"
     exec: go build .
     out:
       - yap

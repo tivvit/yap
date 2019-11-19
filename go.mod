@@ -3,6 +3,7 @@ module github.com/tivvit/yap
 go 1.13
 
 require (
+	github.com/bmatcuk/doublestar v1.1.5
 	github.com/emicklei/dot v0.10.0
 	github.com/mattn/go-shellwords v1.0.5
 	github.com/sirupsen/logrus v1.4.2
