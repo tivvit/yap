@@ -1,0 +1,5 @@
+version: 1.0
+pipeline:
+  run-always:
+    exec: ls
+    check: bash -c 'cat /dev/urandom | head -c 20'

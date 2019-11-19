@@ -6,6 +6,9 @@ import (
 	"github.com/tivvit/yap/pkg/reporter"
 	"github.com/tivvit/yap/pkg/reporter/event"
 	"github.com/tivvit/yap/pkg/tracker"
+	"io"
+
+	//"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -33,13 +36,14 @@ func run(cmd []string, env []string, stdout bool, stderr bool) (string, bool) {
 	c.Env = env
 	var out bytes.Buffer
 	c.Stdout = &out
+	c.Stderr = &out
 	t := tracker.NewTracker()
 	t.Start("run")
 	if stdout {
-		c.Stdout = os.Stdout
+		c.Stdout = io.MultiWriter(&out, os.Stdout)
 	}
 	if stderr {
-		c.Stderr = os.Stderr
+		c.Stderr = io.MultiWriter(&out, os.Stderr)
 	}
 	err := c.Run()
 	if err != nil {
@@ -58,5 +62,6 @@ func run(cmd []string, env []string, stdout bool, stderr bool) (string, bool) {
 	e.Env = strings.Join(env, "\n")
 	e.Failed  = !c.ProcessState.Success()
 	reporter.Report(e)
+	log.Info(out.String())
 	return out.String(), c.ProcessState.Success()
 }

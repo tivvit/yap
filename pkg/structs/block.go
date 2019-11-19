@@ -14,6 +14,7 @@ import (
 	"github.com/tivvit/yap/pkg/stateStorage"
 	"github.com/tivvit/yap/pkg/tracker"
 	"github.com/tivvit/yap/pkg/utils"
+	"strconv"
 	"strings"
 )
 
@@ -37,11 +38,12 @@ type IncludeBlock struct {
 }
 
 const (
-	dotBlockPrefix    = "block:"
-	StateNameExec     = "exec"
-	StateNameEnv      = "env"
-	StateNameCheckCmd = "checkCmd"
-	StateNameCheck    = "check"
+	dotBlockPrefix        = "block:"
+	StateNameExec         = "exec"
+	StateNameEnv          = "env"
+	StateNameCheckCmd     = "checkCmd"
+	StateNameCheck        = "checkOutHash"
+	StateNameCheckSuccess = "checkOutSuccess"
 )
 
 func NewBlockFromMap(name string, m map[string]interface{}) *Block {
@@ -255,14 +257,15 @@ func (b Block) GetState() (string, error) {
 	if len(b.Check) > 0 {
 		// this should be used for checking external deps (i.e. download over internet)
 		log.Printf("Explicit state check `%s`\n", strings.Join(b.Check, " "))
-		// todo review
-		out, _ := utils.GenericRun(b.Check)
+		out, ok := utils.GenericRun(b.Check)
+		log.Infof("check out %s", out)
 		cs, err := utils.Md5Checksum(strings.NewReader(out))
 		if err != nil {
 			log.Println(err)
 			state[StateNameCheck] = "ERROR"
 		}
 		state[StateNameCheck] = cs
+		state[StateNameCheckSuccess] = strconv.FormatBool(ok)
 	}
 
 	js, err := json.Marshal(state)
