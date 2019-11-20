@@ -128,7 +128,7 @@ func NewBlockFromMap(name string, m map[string]interface{}) *Block {
 	return &b
 }
 
-func (b Block) Run(state stateStorage.State, p *Pipeline, dry bool) {
+func (b *Block) Run(state stateStorage.State, p *Pipeline, dry bool) {
 	t := tracker.NewTracker()
 	if dry {
 		log.Infof("Running %s `%s`", b.FullName, strings.Join(b.Exec, " "))
@@ -257,11 +257,10 @@ func (b Block) GetState() (string, error) {
 	if len(b.Check) > 0 {
 		// this should be used for checking external deps (i.e. download over internet)
 		log.Printf("Explicit state check `%s`\n", strings.Join(b.Check, " "))
-		out, ok := utils.GenericRun(b.Check)
-		log.Infof("check out %s", out)
+		out, ok := utils.SilentRun(b.Check)
 		cs, err := utils.Md5Checksum(strings.NewReader(out))
 		if err != nil {
-			log.Println(err)
+			log.Println("Check out md5 err:", err)
 			state[StateNameCheck] = "ERROR"
 		}
 		state[StateNameCheck] = cs

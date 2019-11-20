@@ -7,8 +7,6 @@ import (
 	"github.com/tivvit/yap/pkg/reporter/event"
 	"github.com/tivvit/yap/pkg/tracker"
 	"io"
-
-	//"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -31,7 +29,6 @@ func GenericRunEnv(cmd []string, environ []string, stdout bool, stderr bool) (st
 }
 
 func run(cmd []string, env []string, stdout bool, stderr bool) (string, bool) {
-	//log.Println(strings.Join(cmd, " "))
 	c := exec.Command(cmd[0], cmd[1:]...)
 	c.Env = env
 	var out bytes.Buffer
@@ -62,6 +59,5 @@ func run(cmd []string, env []string, stdout bool, stderr bool) (string, bool) {
 	e.Env = strings.Join(env, "\n")
 	e.Failed  = !c.ProcessState.Success()
 	reporter.Report(e)
-	log.Info(out.String())
 	return out.String(), c.ProcessState.Success()
 }

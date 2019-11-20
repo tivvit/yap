@@ -3,3 +3,9 @@ pipeline:
   run-always:
     exec: ls
     check: bash -c 'cat /dev/urandom | head -c 20'
+  run-once:
+    exec: ls
+    check: echo "a"
+  run-external-dep:
+    exec: ls
+    check: bash -c 'curl -LIs ubuntu.com | grep -i "Content-Length:"'
