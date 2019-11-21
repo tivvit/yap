@@ -15,6 +15,7 @@ var listCmd = &cobra.Command{
 	Aliases: []string{"l"},
 	Short:   "list",
 	Long:    ``,
+	Version: yapCmd.Version,
 	Args: cobra.RangeArgs(0, 1),
 	Run: func(cmd *cobra.Command, args []string) {
 		p := pkg.LoadCmd(cmd)

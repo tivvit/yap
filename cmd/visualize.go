@@ -14,6 +14,7 @@ var visualizeCmd = &cobra.Command{
 	Aliases: []string{"v", "vis"},
 	Short:   "visualize",
 	Long:    ``,
+	Version: yapCmd.Version,
 	Args: cobra.RangeArgs(0, 1),
 	Run: func(cmd *cobra.Command, args []string) {
 		o, err := cmd.Flags().GetString(cmdFlags.Out)

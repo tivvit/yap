@@ -7,7 +7,7 @@ pipeline:
   build:
     in:
       - "**/*.go"
-    exec: go build .
+    exec: bash -c 'go build -ldflags "-X github.com/tivvit/yap/cmd.GitTag=$(git describe --tags 2>1 || echo "unknown") -X github.com/tivvit/yap/cmd.GitCommit=$(git rev-parse --short HEAD)" .'
     out:
       - yap
   install:

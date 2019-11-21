@@ -10,11 +10,17 @@ import (
 
 // todo support taint (force run)
 
+var (
+	GitCommit string
+	GitTag    = "unknown"
+)
+
 var yapCmd = &cobra.Command{
-	Use:   "yap",
-	Short: "Yet Another Pipeline",
-	Long:  ``,
-	Args: cobra.OnlyValidArgs,
+	Use:     "yap",
+	Short:   "Yet Another Pipeline",
+	Long:    ``,
+	Args:    cobra.OnlyValidArgs,
+	Version: GitTag + " " + GitCommit,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		setLogger(cmd)
 	},
@@ -34,6 +40,7 @@ func init() {
 	yapCmd.AddCommand(listCmd)
 	yapCmd.PersistentFlags().StringP(cmdFlags.File, "f", "", "Main yapfile path")
 	yapCmd.PersistentFlags().BoolP(cmdFlags.Quiet, "q", false, "Suppress yap output")
+	//yapCmd.PersistentFlags().BoolP(cmdFlags.Quiet, "q", false, "Suppress yap output")
 	runCmd.Flags().BoolP(cmdFlags.DryRun, "d", false, "Do not run - just check")
 	visualizeCmd.Flags().StringP(cmdFlags.Out, "o", "graph.dot", "Output graph filename")
 	visualizeCmd.Flags().StringP(cmdFlags.OutImage, "i", "graph.png", "Output graph image filename")

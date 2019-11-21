@@ -16,6 +16,7 @@ var runCmd = &cobra.Command{
 	Aliases: []string{"r"},
 	Short:   "run",
 	Long:    ``,
+	Version: yapCmd.Version,
 	Args: cobra.RangeArgs(0, 1),
 	Run: func(cmd *cobra.Command, args []string) {
 		p := pkg.LoadCmd(cmd)
