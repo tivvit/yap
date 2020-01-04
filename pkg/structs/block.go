@@ -1,6 +1,7 @@
 package structs
 
 import (
+
 	"encoding/json"
 	"fmt"
 	"github.com/bmatcuk/doublestar"

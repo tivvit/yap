@@ -1,0 +1,5 @@
+version: 1.0
+pipeline:
+  main:
+    type: script
+    include: python3 tooling/install.py
