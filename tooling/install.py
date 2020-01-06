@@ -12,8 +12,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-o", "--output", help="path for installation",
                     default="/usr/local/bin/")
 args = parser.parse_args()
-# todo read env
-install_file = args.output
+install_file = os.getenv("YAP_INSTALL_PATH", args.output)
 
 tag = "unknown"
 try:
@@ -55,7 +54,6 @@ p.add(yap.DictBlock({
 p.add(yap.DictBlock({
     "name": "install",
     "exec": "cp yap {}".format(install_file),
-    "deps": ["build"],
-    "in_files": ["**/*.go"]
+    "in_files": ["yap"]
 }))
 print(p)
