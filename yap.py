@@ -6,7 +6,9 @@ VERSION = 1.0
 
 
 class Block(object):
-    def __init__(self, name: str, exe: str, check=None, desc=None, deps=None, out=None, in_files=None, env=None, stderr=None, stdout=None, may_fail=None):
+    def __init__(self, name: str, exe: str, check=None, desc=None, deps=None,
+                 out=None, in_files=None, env=None, stderr=None, stdout=None,
+                 may_fail=None, idempotent=None):
         if deps is None:
             deps = []
         if out is None:
@@ -26,6 +28,7 @@ class Block(object):
         self.stderr = stderr
         self.stdout = stdout
         self.may_fail = may_fail
+        self.idempotent = idempotent
 
     def items(self):
         r = copy.deepcopy(self.__dict__)
