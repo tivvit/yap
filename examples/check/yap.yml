@@ -3,6 +3,9 @@ pipeline:
   run-always:
     exec: ls
     check: bash -c 'cat /dev/urandom | head -c 20'
+  idempotent:
+    exec: ls
+    idempotent: false
   run-once:
     exec: ls
     check: echo "a"

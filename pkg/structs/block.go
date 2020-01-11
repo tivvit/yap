@@ -1,7 +1,6 @@
 package structs
 
 import (
-
 	"encoding/json"
 	"fmt"
 	"github.com/bmatcuk/doublestar"
@@ -31,6 +30,7 @@ type Block struct {
 	Stdout            bool     `yaml:"stdout,omitempty"`
 	Stderr            bool     `yaml:"stderr,omitempty"`
 	MayFail           bool     `yaml:"may-fail,omitempty"`
+	Idempotent        bool     `yaml:"idempotent,omitempty"`
 }
 
 type IncludeBlock struct {
@@ -54,6 +54,7 @@ func NewBlockFromMap(name string, m map[string]interface{}) *Block {
 	b.Name = name
 	b.Stdout = true
 	b.Stderr = true
+	b.Idempotent = true
 	if m["stdout"] != nil {
 		b.Stdout = m["stdout"].(bool)
 	}
@@ -62,6 +63,9 @@ func NewBlockFromMap(name string, m map[string]interface{}) *Block {
 	}
 	if m["may-fail"] != nil {
 		b.MayFail = m["may-fail"].(bool)
+	}
+	if m["idempotent"] != nil {
+		b.Idempotent = m["idempotent"].(bool)
 	}
 	// todo keys names based on struct annotation
 	if m["exec"] == nil {
@@ -277,6 +281,9 @@ func (b Block) GetState() (string, error) {
 }
 
 func (b Block) Changed(state stateStorage.State, p *Pipeline) bool {
+	if !b.Idempotent {
+		return true
+	}
 	currentState, err := b.GetState()
 	if err != nil {
 		log.Printf("Error while checking state for %s\n", b.FullName)
