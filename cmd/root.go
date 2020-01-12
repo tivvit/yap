@@ -38,6 +38,7 @@ func init() {
 	yapCmd.AddCommand(visualizeCmd)
 	yapCmd.AddCommand(printCmd)
 	yapCmd.AddCommand(listCmd)
+	yapCmd.AddCommand(taintCmd)
 	yapCmd.PersistentFlags().StringP(cmdFlags.File, "f", "", "Main yapfile path")
 	yapCmd.PersistentFlags().BoolP(cmdFlags.Quiet, "q", false, "Suppress yap output")
 	//yapCmd.PersistentFlags().BoolP(cmdFlags.Quiet, "q", false, "Suppress yap output")

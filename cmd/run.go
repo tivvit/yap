@@ -52,7 +52,6 @@ var runCmd = &cobra.Command{
 			log.Fatalln("too many args")
 		}
 
-		// todo support taint (force run)
 		// todo generate report
 		// todo generate state
 		// todo generate
