@@ -1,0 +1,8 @@
+version: 1.0
+pipeline:
+  buffered:
+    exec: "python3 print-wait.py"
+    idempotent: false
+  unbuffered:
+    exec: "python3 -u print-wait.py"
+    idempotent: false

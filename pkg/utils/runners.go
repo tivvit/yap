@@ -6,10 +6,12 @@ import (
 	"github.com/tivvit/yap/pkg/reporter"
 	"github.com/tivvit/yap/pkg/reporter/event"
 	"github.com/tivvit/yap/pkg/tracker"
+	"github.com/creack/pty"
 	"io"
 	"os"
 	"os/exec"
 	"strings"
+	"syscall"
 )
 
 func GenericRun(cmd []string) (string, bool) {
@@ -31,16 +33,52 @@ func GenericRunEnv(cmd []string, environ []string, stdout bool, stderr bool) (st
 func run(cmd []string, env []string, stdout bool, stderr bool) (string, bool) {
 	c := exec.Command(cmd[0], cmd[1:]...)
 	c.Env = env
-	var out bytes.Buffer
-	c.Stdout = &out
-	c.Stderr = &out
+	out := bytes.Buffer{}
 	t := tracker.NewTracker()
 	t.Start("run")
 	if stdout {
-		c.Stdout = io.MultiWriter(&out, os.Stdout)
+		stdoutPty, tty, err := pty.Open()
+		if err != nil {
+			log.Fatal("Not possible to open pty")
+		}
+		defer func() { _ = tty.Close() }()
+		defer func() { _ = stdoutPty.Close() }()
+
+		c.Stdout = tty
+		if c.SysProcAttr == nil {
+			c.SysProcAttr = &syscall.SysProcAttr{}
+		}
+		c.SysProcAttr.Setctty = true
+		c.SysProcAttr.Setsid = true
+		c.SysProcAttr.Ctty = int(tty.Fd())
+		go func() {
+			_, _ = io.Copy(io.MultiWriter(os.Stdout, &out), stdoutPty)
+		}()
+	} else {
+		c.Stdout = io.MultiWriter(&out)
 	}
 	if stderr {
-		c.Stderr = io.MultiWriter(&out, os.Stderr)
+		stderrPty, etty, err := pty.Open()
+		if err != nil {
+			log.Fatal("Not possible to open pty")
+		}
+		defer func() { _ = etty.Close() }()
+		defer func() { _ = stderrPty.Close() }()
+
+		c.Stderr = etty
+		if !stdout {
+			if c.SysProcAttr == nil {
+				c.SysProcAttr = &syscall.SysProcAttr{}
+			}
+			c.SysProcAttr.Setctty = true
+			c.SysProcAttr.Setsid = true
+			c.SysProcAttr.Ctty = int(etty.Fd())
+		}
+		go func() {
+			_, _ = io.Copy(io.MultiWriter(os.Stderr, &out), stderrPty)
+		}()
+	} else {
+		c.Stderr = io.MultiWriter(&out)
 	}
 	err := c.Run()
 	if err != nil {
@@ -57,7 +95,7 @@ func run(cmd []string, env []string, stdout bool, stderr bool) (string, bool) {
 	}
 	e.Command = strings.Join(cmd, " ")
 	e.Env = strings.Join(env, "\n")
-	e.Failed  = !c.ProcessState.Success()
+	e.Failed = !c.ProcessState.Success()
 	reporter.Report(e)
 	return out.String(), c.ProcessState.Success()
 }
