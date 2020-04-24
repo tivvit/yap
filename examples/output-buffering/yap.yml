@@ -6,3 +6,9 @@ pipeline:
   unbuffered:
     exec: "python3 -u print-wait.py"
     idempotent: false
+  buffered-stdout:
+    exec: "python3 print-stdout.py"
+    idempotent: false
+  buffered-stderr:
+    exec: "python3 print-stderr.py"
+    idempotent: false

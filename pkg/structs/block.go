@@ -135,11 +135,11 @@ func NewBlockFromMap(name string, m map[string]interface{}) *Block {
 
 func (b *Block) Run(state stateStorage.State, p *Pipeline, dry bool) {
 	t := tracker.NewTracker()
+	dryLog := ""
 	if dry {
-		log.Infof("Running %s `%s`", b.FullName, strings.Join(b.Exec, " "))
-	} else {
-		log.Infof("Running %s", b.FullName)
+		dryLog = "dry "
 	}
+	log.Infof("%s running %s `%s`", dryLog, b.FullName, strings.Join(b.Exec, " "))
 
 	if !b.Changed(state, p) {
 		e := event.NewBlockRunEvent("Not changed", b.FullName)
