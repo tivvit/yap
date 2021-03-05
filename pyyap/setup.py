@@ -10,6 +10,6 @@ setup(
     ],
     url='https://github.com/tivvit/yap',
     install_requires=[
-        "pyyaml",
+        "PyYAML",
     ],
 )
