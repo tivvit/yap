@@ -14,7 +14,6 @@ jobs:
       with:
         python-version: 3.9
     - name: Install dependencies
-      working-directory: ./pyyap
       run: |
         python -m pip install --upgrade pip
         pip install pylint
