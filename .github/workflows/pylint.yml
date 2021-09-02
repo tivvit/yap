@@ -20,4 +20,5 @@ jobs:
     - name: Analysing the code with pylint
       working-directory: ./pyyap 
       run: |
-        pylint `ls -R|grep .py$|xargs`
+        pylint yap
+        #pylint `ls -R|grep .py$|xargs`
