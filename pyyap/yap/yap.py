@@ -73,7 +73,7 @@ class Pipeline():
 
     def load_from_file(self, fn: str):
         with open(fn, "r", encoding='utf-8') as f:
-            for k, v in yaml.load():
+            for k, v in yaml.load(f):
                 self.pipeline[k] = DictBlock(v)
 
     def add(self, block: Block):
