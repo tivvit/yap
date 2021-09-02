@@ -5,7 +5,7 @@ import yaml
 VERSION = 1.0
 
 
-class Block(object):
+class Block():
     def __init__(self, name: str, exe: str, check=None, desc=None, deps=None,
                  out=None, in_files=None, env=None, stderr=None, stdout=None,
                  may_fail=None, idempotent=None):
@@ -53,10 +53,10 @@ class DictBlock(Block):
             raise Exception("Missing exec param")
         del params["name"]
         del params["exec"]
-        super(DictBlock, self).__init__(name, exe, **params)
+        super().__init__(name, exe, **params)
 
 
-class Pipeline(object):
+class Pipeline():
     def __init__(self, settings=None):
         if settings is None:
             settings = {}
@@ -72,8 +72,9 @@ class Pipeline(object):
         return yaml.safe_dump(out, default_flow_style=False)
 
     def load_from_file(self, fn: str):
-        for k, v in yaml.load(open(fn, "r")):
-            self.pipeline[k] = DictBlock(v)
+        with open(fn, "r", encoding='utf-8') as f:
+            for k, v in yaml.load():
+                self.pipeline[k] = DictBlock(v)
 
     def add(self, block: Block):
         self.pipeline[block.name] = block
