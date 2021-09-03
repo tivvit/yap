@@ -22,5 +22,5 @@ jobs:
     - name: Analysing the code with pylint
       working-directory: ./pyyap 
       run: |
-        pylint yap
+        pylint yap --fail-under=7
         #pylint `ls -R|grep .py$|xargs`
