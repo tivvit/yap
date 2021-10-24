@@ -28,8 +28,8 @@ type Pipeline struct {
 	Version            float32                  `yaml:"version"`
 	Settings           map[string]interface{}   `yaml:"settings,omitempty"`
 	Pipeline           map[string]PipelineBlock `yaml:"pipeline"`
-	Map                map[string]PipelineBlock `yaml:"-"`
-	MapFiles           map[string]*File         `yaml:"-"`
+	BlocksMap          map[string]PipelineBlock `yaml:"-"`
+	FilesMap           map[string]*File         `yaml:"-"`
 	State              stateStorage.State       `yaml:"-"`
 }
 
@@ -38,7 +38,7 @@ func NewPipeline(version float32, settings map[string]interface{}, deps []string
 		Version:  version,
 		Settings: settings,
 		Pipeline: make(map[string]PipelineBlock),
-		MapFiles: make(map[string]*File),
+		FilesMap: make(map[string]*File),
 		PipelineBlockBase: &PipelineBlockBase{
 			Deps: deps,
 		},
@@ -80,7 +80,7 @@ func (p Pipeline) Run(state stateStorage.State, pl *Pipeline, dry bool) {
 	}
 }
 
-func (pl Pipeline) Changed(state stateStorage.State, p *Pipeline) bool {
+func (_ Pipeline) Changed(state stateStorage.State, p *Pipeline) bool {
 	for _, b := range p.Pipeline {
 		if b.Changed(state, p) {
 			return true
@@ -174,7 +174,7 @@ func (p Pipeline) flatten(pb PipelineBlock) map[string]PipelineBlock {
 					r[n] = b
 					lm[n] = b
 				}
-				v.(*Pipeline).Map = lm
+				v.(*Pipeline).BlocksMap = lm
 				r[v.(*Pipeline).FullName] = v.(*Pipeline)
 			case *Block:
 				r[v.(*Block).FullName] = v.(*Block)
@@ -185,20 +185,20 @@ func (p Pipeline) flatten(pb PipelineBlock) map[string]PipelineBlock {
 }
 
 func (p Pipeline) addFile(name string) *File {
-	if f, ok := p.MapFiles[name]; ok {
+	if f, ok := p.FilesMap[name]; ok {
 		return f
 	} else {
-		p.MapFiles[name] = &File{
+		p.FilesMap[name] = &File{
 			Name: name,
 		}
-		p.MapFiles[name].Analyze()
-		return p.MapFiles[name]
+		p.FilesMap[name].Analyze()
+		return p.FilesMap[name]
 	}
 }
 
 func (p *Pipeline) files() {
 	var f *File
-	for _, d := range p.Map {
+	for _, d := range p.BlocksMap {
 		switch d.(type) {
 		case *Block:
 			for _, o := range d.(*Block).Out {
@@ -215,7 +215,7 @@ func (p *Pipeline) files() {
 func (p *Pipeline) Enrich() {
 	p.names(MainNamespace, p)
 	p.parents(p)
-	p.Map = p.flatten(p)
+	p.BlocksMap = p.flatten(p)
 	p.genDepFullRec(p)
 	p.files()
 }
@@ -259,10 +259,10 @@ func (p Pipeline) Stages() map[string]PipelineBlock {
 
 func (p Pipeline) GetGraphable() map[string]Graphable {
 	m := make(map[string]Graphable)
-	for k, v := range p.Map {
+	for k, v := range p.BlocksMap {
 		m[k] = v
 	}
-	for _, v := range p.MapFiles {
+	for _, v := range p.FilesMap {
 		name := v.GetFullName()
 		if _, ok := m[name]; ok {
 			log.Printf("%s is duplicate (present in block and in files) - will use the block", name)

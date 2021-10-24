@@ -4,13 +4,25 @@ pipeline:
     in:
       - "**/*.go"
     exec: go test -v -count=1 ./...
+  git-tag:
+    idempotent: false
+    exec: bash -c 'git describe --tags 2>&1 > tag || echo "unknown" > tag'
+    out:
+      - tag
+  git-commit:
+    idempotent: false
+    exec: bash -c 'git rev-parse --short HEAD > commit'
+    out:
+      - commit
   build:
     in:
       - "**/*.go"
-    exec: bash -c 'go build -ldflags "-X github.com/tivvit/yap/cmd.GitTag=$(git describe --tags 2>1 || echo "unknown") -X github.com/tivvit/yap/cmd.GitCommit=$(git rev-parse --short HEAD)" .'
+      - tag
+      - commit
+    exec: bash -c 'go build -ldflags "-X github.com/tivvit/yap/cmd.GitTag=$(cat tag) -X github.com/tivvit/yap/cmd.GitCommit=$(cat commit)" .'
     out:
       - yap
   install:
-    deps:
-      - build
-    exec: cp yap /usr/local/bin/
+    in:
+      - yap
+    exec: echo "sudo cp yap /usr/local/bin/"
