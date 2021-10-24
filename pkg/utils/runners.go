@@ -2,11 +2,11 @@ package utils
 
 import (
 	"bytes"
+	"github.com/creack/pty"
 	log "github.com/sirupsen/logrus"
 	"github.com/tivvit/yap/pkg/reporter"
 	"github.com/tivvit/yap/pkg/reporter/event"
 	"github.com/tivvit/yap/pkg/tracker"
-	"github.com/creack/pty"
 	"io"
 	"os"
 	"os/exec"
@@ -48,7 +48,7 @@ func run(cmd []string, env []string, stdout bool, stderr bool) (string, bool) {
 		if c.SysProcAttr == nil {
 			c.SysProcAttr = &syscall.SysProcAttr{}
 		}
-		c.SysProcAttr.Setctty = true
+		c.SysProcAttr.Setctty = false
 		c.SysProcAttr.Setsid = true
 		c.SysProcAttr.Ctty = int(tty.Fd())
 		go func() {
@@ -70,7 +70,7 @@ func run(cmd []string, env []string, stdout bool, stderr bool) (string, bool) {
 			if c.SysProcAttr == nil {
 				c.SysProcAttr = &syscall.SysProcAttr{}
 			}
-			c.SysProcAttr.Setctty = true
+			c.SysProcAttr.Setctty = false
 			c.SysProcAttr.Setsid = true
 			c.SysProcAttr.Ctty = int(etty.Fd())
 		}

@@ -1,0 +1,7 @@
+version: 1.0
+settings:
+  state:
+    file: another-state.json
+pipeline:
+  hello:
+    exec: echo "hello"

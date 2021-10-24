@@ -8,6 +8,7 @@ import (
 	"github.com/tivvit/yap/pkg/conf"
 	"github.com/tivvit/yap/pkg/reporter"
 	"github.com/tivvit/yap/pkg/reporter/event"
+	"github.com/tivvit/yap/pkg/settings"
 	"github.com/tivvit/yap/pkg/stateStorage"
 	"github.com/tivvit/yap/pkg/tracker"
 	"github.com/tivvit/yap/pkg/utils"
@@ -26,14 +27,14 @@ const (
 type Pipeline struct {
 	*PipelineBlockBase `yaml:",inline"`
 	Version            float32                  `yaml:"version"`
-	Settings           map[string]interface{}   `yaml:"settings,omitempty"`
+	Settings           settings.Settings        `yaml:"settings,omitempty"`
 	Pipeline           map[string]PipelineBlock `yaml:"pipeline"`
 	BlocksMap          map[string]PipelineBlock `yaml:"-"`
 	FilesMap           map[string]*File         `yaml:"-"`
 	State              stateStorage.State       `yaml:"-"`
 }
 
-func NewPipeline(version float32, settings map[string]interface{}, deps []string) *Pipeline {
+func NewPipeline(version float32, settings settings.Settings, deps []string) *Pipeline {
 	return &Pipeline{
 		Version:  version,
 		Settings: settings,
@@ -47,7 +48,7 @@ func NewPipeline(version float32, settings map[string]interface{}, deps []string
 
 type PipelineRaw struct {
 	Version  float32                `yaml:"version"`
-	Settings map[string]interface{} `yaml:"settings,omitempty"`
+	Settings settings.Settings      `yaml:"settings,omitempty"`
 	Pipeline map[string]interface{} `yaml:"pipeline"`
 	Deps     []string               `yaml:"deps"`
 }
@@ -80,9 +81,9 @@ func (p Pipeline) Run(state stateStorage.State, pl *Pipeline, dry bool) {
 	}
 }
 
-func (_ Pipeline) Changed(state stateStorage.State, p *Pipeline) bool {
-	for _, b := range p.Pipeline {
-		if b.Changed(state, p) {
+func (p Pipeline) Changed(state stateStorage.State, pipeline *Pipeline) bool {
+	for _, b := range pipeline.Pipeline {
+		if b.Changed(p.State, pipeline) {
 			return true
 		}
 	}

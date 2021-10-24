@@ -4,7 +4,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/tivvit/yap/pkg"
-	"github.com/tivvit/yap/pkg/stateStorage"
 	"regexp"
 )
 
@@ -22,9 +21,8 @@ var taintCmd = &cobra.Command{
 			log.Fatalf("Filter regex \"%s\" is invalid\n", userRe)
 		}
 
-		js := stateStorage.NewJsonStorage()
-
 		p := pkg.LoadCmd(cmd)
+		js := p.State
 		for _, i := range p.List() {
 			if re.MatchString(i) {
 				js.Delete(i)
