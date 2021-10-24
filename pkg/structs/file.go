@@ -2,11 +2,11 @@ package structs
 
 import (
 	"github.com/emicklei/dot"
+	log "github.com/sirupsen/logrus"
 	"github.com/tivvit/yap/pkg/conf"
 	"github.com/tivvit/yap/pkg/state"
 	"github.com/tivvit/yap/pkg/stateStorage"
 	"github.com/tivvit/yap/pkg/utils"
-	log "github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -20,14 +20,17 @@ const (
 )
 
 type File struct {
-	Name     string
-	Deps     []*Block
-	Analyzed bool
-	Size     int64
-	Mode     os.FileMode
-	ModTime  time.Time
-	IsDir    bool
-	Exists   bool
+	Name       string
+	Deps       []*Block
+	Analyzed   bool
+	Size       int64
+	Mode       os.FileMode
+	ModTime    time.Time
+	IsDir      bool
+	Exists     bool
+	pipeline   *Pipeline
+	useModTime bool
+	useMd5     bool
 }
 
 func (f File) GetState() (string, error) {
@@ -62,6 +65,9 @@ func (f File) GetState() (string, error) {
 }
 
 func (f File) getFileMd5() (string, error) {
+	if !f.useMd5 {
+		return "disabled with config", nil
+	}
 	r, err := os.Open(f.Name)
 	if err != nil {
 		return "", err
@@ -202,6 +208,10 @@ func (f File) Changed(s stateStorage.State, p *Pipeline) bool {
 }
 
 func (f *File) Analyze() {
+	rules := f.pipeline.Settings.State.FindRuleMatchingToFile(f.Name)
+	f.useModTime = rules[stateStorage.Mtime]
+	f.useMd5 = rules[stateStorage.Md5]
+
 	fileInfo, err := os.Stat(f.Name)
 	if os.IsNotExist(err) {
 		f.Exists = false
@@ -210,13 +220,14 @@ func (f *File) Analyze() {
 	}
 	if err != nil {
 		f.Analyzed = false
-		log.Println(err)
 		return
 	}
 	f.Analyzed = true
 	f.Size = fileInfo.Size()
 	f.Mode = fileInfo.Mode()
-	f.ModTime = fileInfo.ModTime()
+	if f.useModTime {
+		f.ModTime = fileInfo.ModTime()
+	}
 	f.IsDir = fileInfo.IsDir()
 }
 

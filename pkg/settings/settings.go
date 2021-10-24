@@ -11,6 +11,15 @@ func DefaultSettings() *Settings {
 		State: stateStorage.Settings{
 			Type: "json",
 			File: "state.json",
+			FilesAttributes: []stateStorage.FileAttributeSettings{
+				{
+					Regex: ".*",
+					Rules: map[stateStorage.FileAttributes]bool{
+						stateStorage.Mtime: false,
+						stateStorage.Md5:   true,
+					},
+				},
+			},
 		},
 	}
 }

@@ -191,6 +191,7 @@ func (p Pipeline) addFile(name string) *File {
 	} else {
 		p.FilesMap[name] = &File{
 			Name: name,
+			pipeline: &p,
 		}
 		p.FilesMap[name].Analyze()
 		return p.FilesMap[name]
