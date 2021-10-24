@@ -33,9 +33,8 @@ func (js jsonStorage) write() {
 	js.storage.Write(b)
 }
 
-func NewJsonStorage() *jsonStorage {
-	// todo configurable
-	f := "state.json"
+func NewJsonStorage(settings Settings) *jsonStorage {
+	f := settings.File
 	js := jsonStorage{
 		storage: storage.NewFileStorage(f),
 		data:    map[string]string{},

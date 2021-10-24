@@ -10,7 +10,11 @@ import (
 func parsePipelinev1(raw *structs.PipelineRaw) *structs.Pipeline {
 	// todo check duplicate keys (is it even possible here? - yaml solves that?)
 	p := structs.NewPipeline(raw.Version, raw.Settings, raw.Deps)
-	p.State = stateStorage.NewJsonStorage()
+	stStorage, err := stateStorage.NewStateStorage(raw.Settings.State)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+	p.State = stStorage
 	for k, v := range (*raw).Pipeline {
 		//log.Println(k, v)
 		vm, ok := v.(map[string]interface{})

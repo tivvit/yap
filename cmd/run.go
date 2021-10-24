@@ -8,7 +8,6 @@ import (
 	"github.com/tivvit/yap/pkg/conf"
 	"github.com/tivvit/yap/pkg/pipeline"
 	"github.com/tivvit/yap/pkg/reporter"
-	"github.com/tivvit/yap/pkg/stateStorage"
 )
 
 var runCmd = &cobra.Command{
@@ -20,7 +19,7 @@ var runCmd = &cobra.Command{
 	Args: cobra.RangeArgs(0, 1),
 	Run: func(cmd *cobra.Command, args []string) {
 		p := pkg.LoadCmd(cmd)
-		js := stateStorage.NewJsonStorage()
+		js := p.State
 		dry, err := cmd.Flags().GetBool(cmdFlags.DryRun)
 		if err != nil {
 			log.Fatalln(err)

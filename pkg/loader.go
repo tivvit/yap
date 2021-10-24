@@ -5,6 +5,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/tivvit/yap/cmdFlags"
+	"github.com/tivvit/yap/pkg/settings"
 	"github.com/tivvit/yap/pkg/structs"
 	"github.com/tivvit/yap/pkg/utils"
 	"gopkg.in/yaml.v3"
@@ -60,6 +61,7 @@ func Load(fileName string) *structs.Pipeline {
 		log.Printf("load %s err #%v ", yapFile, err)
 	}
 	p := structs.PipelineRaw{}
+	p.Settings = *settings.DefaultSettings()
 	//log.Println(string(b))
 	err = yaml.Unmarshal(b, &p)
 	if err != nil {

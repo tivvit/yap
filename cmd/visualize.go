@@ -6,7 +6,6 @@ import (
 	"github.com/tivvit/yap/cmdFlags"
 	"github.com/tivvit/yap/pkg"
 	conf2 "github.com/tivvit/yap/pkg/conf"
-	"github.com/tivvit/yap/pkg/stateStorage"
 )
 
 var visualizeCmd = &cobra.Command{
@@ -78,7 +77,7 @@ var visualizeCmd = &cobra.Command{
 		//	}
 		//}
 
-		js := stateStorage.NewJsonStorage()
+		js := p.State
 		//log.Println("parent", p.Parent)
 		//log.Println(p.Pipeline["test"].(*structs.Pipeline).DepsFull)
 		//log.Println(p.Pipeline["finalize"].(*structs.Block).DepsFull)
