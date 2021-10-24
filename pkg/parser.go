@@ -1,10 +1,10 @@
 package pkg
 
 import (
+	log "github.com/sirupsen/logrus"
 	"github.com/tivvit/yap/pkg/stateStorage"
 	"github.com/tivvit/yap/pkg/structs"
 	"github.com/tivvit/yap/pkg/utils"
-	log "github.com/sirupsen/logrus"
 )
 
 func parsePipelinev1(raw *structs.PipelineRaw) *structs.Pipeline {
@@ -50,6 +50,7 @@ func parsePipelinev1(raw *structs.PipelineRaw) *structs.Pipeline {
 				}
 				p.Pipeline[k] = pp
 			case "yaml":
+				// todo should the path be relative to the yapfile?
 				ip := LoadFile(name)
 				//log.Println(ip)
 				pp := ParsePipeline(ip)

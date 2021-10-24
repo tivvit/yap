@@ -1,6 +1,6 @@
 module github.com/tivvit/yap
 
-go 1.13
+go 1.17
 
 require (
 	github.com/bmatcuk/doublestar v1.1.5
@@ -11,5 +11,4 @@ require (
 	github.com/spf13/cobra v0.0.5
 	github.com/yourbasic/graph v0.0.0-20170921192928-40eb135c0b26
 	gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
-
 )

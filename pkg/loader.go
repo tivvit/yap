@@ -2,13 +2,13 @@ package pkg
 
 import (
 	"github.com/mattn/go-shellwords"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/tivvit/yap/cmdFlags"
 	"github.com/tivvit/yap/pkg/structs"
 	"github.com/tivvit/yap/pkg/utils"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
-	log "github.com/sirupsen/logrus"
 	"os"
 )
 

@@ -64,14 +64,14 @@ var visualizeCmd = &cobra.Command{
 		log.Println(conf)
 
 		p := pkg.LoadCmd(cmd)
-		//for k := range p.Map {
+		//for k := range p.BlocksMap {
 		//	log.Println(k)
 		//}
 		// todo user input
 
-		//log.Println("map", p.Map)
-		//log.Println("mapFiles", p.MapFiles)
-		//for k, f := range p.MapFiles {
+		//log.Println("map", p.BlocksMap)
+		//log.Println("mapFiles", p.FilesMap)
+		//for k, f := range p.FilesMap {
 		//	log.Println(k, f.Name, f.Deps)
 		//	for _, d := range f.Deps {
 		//		log.Println(d.FullName)

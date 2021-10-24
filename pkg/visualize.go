@@ -2,11 +2,11 @@ package pkg
 
 import (
 	"github.com/emicklei/dot"
+	log "github.com/sirupsen/logrus"
 	"github.com/tivvit/yap/pkg/conf"
 	"github.com/tivvit/yap/pkg/pipeline"
 	"github.com/tivvit/yap/pkg/structs"
 	"github.com/tivvit/yap/pkg/utils"
-	log "github.com/sirupsen/logrus"
 	"os"
 	"os/exec"
 )
@@ -29,10 +29,10 @@ func Visualize(p *structs.Pipeline, name string, conf conf.VisualizeConf) {
 		}
 	}
 	for n := range fileMap {
-		fileMap[n] = p.MapFiles[n]
+		fileMap[n] = p.FilesMap[n]
 		fileMap[n].Visualize(di, p, &fileMap, &nodeMap, conf)
 	}
-	for k, n := range p.Map {
+	for k, n := range p.BlocksMap {
 		if _, ok := nodeMap[k]; !ok {
 			continue
 		}
@@ -75,7 +75,7 @@ func Visualize(p *structs.Pipeline, name string, conf conf.VisualizeConf) {
 	//// todo file separation should be optional
 	//nodeMap, deps := p.visualize(di, di, &p)
 	//fileMap := make(map[string]dot.Node)
-	//for _, f := range p.MapFiles {
+	//for _, f := range p.FilesMap {
 	//	f.Visualize(di, &fileMap)
 	//	//if f.Analyzed && f.IsDir {
 	//	//	fileMap[f.Name] = di.Node(f.Name).Attr("shape", "septagon")
@@ -83,7 +83,7 @@ func Visualize(p *structs.Pipeline, name string, conf conf.VisualizeConf) {
 	//	//	fileMap[f.Name] = di.Node(f.Name).Attr("shape", "oval")
 	//	//}
 	//}
-	//for _, n := range p.Map {
+	//for _, n := range p.BlocksMap {
 	//	switch n.(type) {
 	//	case *Block:
 	//		b := n.(*Block)

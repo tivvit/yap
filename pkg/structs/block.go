@@ -96,32 +96,14 @@ func NewBlockFromMap(name string, m map[string]interface{}) *Block {
 		b.Deps = deps
 	}
 	if m["in"] != nil {
-		var in []string
 		for _, i := range m["in"].([]interface{}) {
-			g, err := doublestar.Glob(i.(string))
-			if err != nil {
-				log.Warnf("Glob %s failed: %s", i, g)
-			} else {
-				for _, f := range g {
-					in = append(in, f)
-				}
-			}
+			b.In = append(b.In, filesFoundOrListed(i.(string))...)
 		}
-		b.In = in
 	}
 	if m["out"] != nil {
-		var out []string
 		for _, d := range m["out"].([]interface{}) {
-			g, err := doublestar.Glob(d.(string))
-			if err != nil {
-				log.Warnf("Glob %s failed: %s", d, g)
-			} else {
-				for _, f := range g {
-					out = append(out, f)
-				}
-			}
+			b.Out = append(b.Out, filesFoundOrListed(d.(string))...)
 		}
-		b.Out = out
 	}
 	if m["env"] != nil {
 		var env []string
@@ -131,6 +113,24 @@ func NewBlockFromMap(name string, m map[string]interface{}) *Block {
 		b.Env = env
 	}
 	return &b
+}
+
+func filesFoundOrListed(filePattern string) []string {
+	var files []string
+	g, err := doublestar.Glob(filePattern)
+	if err != nil {
+		log.Warnf("Glob %s failed: %s", filePattern, g)
+	} else {
+		if len(g) > 0 {
+			for _, f := range g {
+				files = append(files, f)
+			}
+		} else {
+			// files do not exist yet - we have to use what user provided
+			files = append(files, filePattern)
+		}
+	}
+	return files
 }
 
 func (b *Block) Run(state stateStorage.State, p *Pipeline, dry bool) {
@@ -183,7 +183,7 @@ func (b *Block) Run(state stateStorage.State, p *Pipeline, dry bool) {
 
 	// state of input files has to be stored somewhere - this is probably the correct place because the block is using the files
 	for _, f := range append(b.Out, b.In...) {
-		file := p.MapFiles[f]
+		file := p.FilesMap[f]
 		c, err := file.GetState()
 		if err != nil {
 			log.Println(err)
@@ -213,7 +213,7 @@ func (b Block) GetDepsState(p *Pipeline) string {
 			for _, f := range g {
 				var st string
 				var err error
-				if v, ok := p.MapFiles[f]; ok {
+				if v, ok := p.FilesMap[f]; ok {
 					st, err = v.GetState()
 				} else {
 					log.Println(f, "NOT FOUND")
@@ -230,7 +230,7 @@ func (b Block) GetDepsState(p *Pipeline) string {
 	for _, d := range b.DepsFull {
 		var st string
 		var err error
-		if v, ok := p.Map[d]; ok {
+		if v, ok := p.BlocksMap[d]; ok {
 			st, err = v.GetState()
 		} else {
 			log.Println(d, "NOT FOUND")
