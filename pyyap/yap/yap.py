@@ -5,7 +5,7 @@ import yaml
 VERSION = 1.0
 
 
-class Block():
+class Block:
     def __init__(self, name: str, exe: str, check=None, desc=None, deps=None,
                  out=None, in_files=None, env=None, stderr=None, stdout=None,
                  may_fail=None, idempotent=None):
