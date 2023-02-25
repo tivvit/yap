@@ -10,6 +10,6 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.2.1
 	github.com/yourbasic/graph v0.0.0-20210606180040-8ecfec1c2869
-	golang.org/x/sys v0.0.0-20211023085530-d6a326fbbf70 // indirect
+	golang.org/x/sys v0.1.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
